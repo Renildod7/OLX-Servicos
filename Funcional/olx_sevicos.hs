@@ -1,78 +1,143 @@
 import System.IO
 
-menu:: IO()
-menu = do
+type Clientes = [Cliente]
+type Cliente = (Email,Senha)
+type Email = String
+type Senha = String
+
+type Profissionais = [Profissional]
+type Profissional = (Email,Senha)
+
+
+
+
+inicio:: IO()
+inicio = do
+    arq1 <- openFile "clientes.txt" ReadMode
+    clientes <- hGetLine arq1
+    hClose arq1
+
+    arq2 <- openFile "profissionais.txt" ReadMode
+    profissionais <- hGetLine arq2
+    hClose arq2
+
+    menu (read clientes) (read profissionais)
+
+menu:: Clientes -> Profissionais -> IO()
+menu clientes profissionais = do
     putStrLn "\nBem vindo a OLX Serviços"
     putStrLn "Gostaria de contratar ou oferecer um seviço?"
     input <- getLine
-    if input == "contratar" then menuCliente
+    if input == "contratar" then menuCliente clientes profissionais
+    else if input == "oferecer" then menuProfissional clientes profissionais
     else if input == "q" then putStrLn "Adeus"
-    else menu
+    else do
+        putStrLn "Não entendi o que você quis dizer" 
+        menu clientes profissionais
 
-menuCliente:: IO()
-menuCliente = do
+menuCliente:: Clientes -> Profissionais -> IO()
+menuCliente clientes profissionais = do
     putStrLn "\nJá possui um cadastro?"
     input <- getLine
-    if (input == "sim") then loginCliente
-    else if (input == "não") then cadastraCliente
+    if (input == "sim") then loginCliente clientes profissionais
+    else if (input == "não") then cadastraCliente clientes profissionais
     else do
         putStrLn "Não entendi o que você quis dizer"
-        menuCliente
+        menuCliente clientes profissionais
 
-menuClienteAutenticado:: IO()
-menuClienteAutenticado = do
+menuClienteAutenticado::Clientes -> IO()
+menuClienteAutenticado clientes = do
     putStrLn "\n\nmenuClienteAutenticado ainda n implementado\n"
 
-cadastraCliente:: IO()
-cadastraCliente = do
-    putStr "Usuário: "
-    usuario <- getLine
+cadastraCliente:: Clientes -> Profissionais ->IO()
+cadastraCliente clientes profissionais = do
+    putStr "E-mail: "
+    email <- getLine
 
     putStr "Senha: "
     senha <- getLine
 
-    arq <- openFile "dados.txt" ReadMode
-    dados <- hGetLine arq
-    hClose arq
-
-    if (clienteCadastrado usuario (read dados) ) then do 
+    if (verificaCadastro email clientes ) then do 
         putStrLn "cliente ja cadastrado"
-        menu
+        menu clientes profissionais
     
     else do
-        arq <- openFile "dados.txt" WriteMode
-        hPutStrLn arq (show ((usuario,senha):(read dados)))
+        arq <- openFile "clientes.txt" WriteMode
+        hPutStrLn arq (show ((email,senha):clientes))
         hClose arq
         putStrLn "Cadastro realizado"
-        menuClienteAutenticado
+        menuClienteAutenticado clientes
 
-clienteCadastrado:: String -> [(String,String)] -> Bool
-clienteCadastrado _ [] = False
-clienteCadastrado usuario (x:xs)
-        | ((fst x) == usuario) = True
-        | otherwise = clienteCadastrado usuario xs
+verificaCadastro:: String -> Clientes -> Bool
+verificaCadastro _ [] = False
+verificaCadastro email (x:xs)
+        | ((fst x) == email) = True
+        | otherwise = verificaCadastro email xs
 
-loginCliente:: IO()
-loginCliente = do
-    putStr "Usuário: "
-    usuario <- getLine
+loginCliente:: Clientes -> Profissionais -> IO()
+loginCliente clientes profissionais = do
+    putStr "E-mail: "
+    email <- getLine
 
     putStr "Senha: "
     senha <- getLine
 
-    arq <- openFile "dados.txt" ReadMode
-    dados <- hGetLine arq
-    hClose arq
-
-    if (autenticaCliente usuario senha (read dados)) then
-        menuClienteAutenticado
+    if (autenticaCliente email senha clientes) then
+        menuClienteAutenticado clientes
     else do
-        putStrLn "Usuário ou senha incorretos"
-        menu
+        putStrLn "E-mail ou senha incorretos"
+        menuCliente clientes profissionais
 
 
-autenticaCliente:: String -> String -> [(String,String)] -> Bool
+autenticaCliente:: String -> String -> Clientes -> Bool
 autenticaCliente _ _ [] = False
-autenticaCliente usuario senha (x:xs)
-        | (x ==(usuario,senha)) = True
-        | otherwise = autenticaCliente usuario senha xs
+autenticaCliente email senha (x:xs)
+        | (x ==(email,senha)) = True
+        | otherwise = autenticaCliente email senha xs
+
+cadastraProfissional:: Clientes -> Profissionais ->IO()
+cadastraProfissional clientes profissionais = do
+    putStr "E-mail: "
+    email <- getLine
+
+    putStr "Senha: "
+    senha <- getLine
+
+    if (verificaCadastro email profissionais ) then do 
+        putStrLn "cliente ja cadastrado"
+        menu clientes profissionais
+    
+    else do
+        arq <- openFile "profissionais.txt" WriteMode
+        hPutStrLn arq (show ((email,senha):profissionais))
+        hClose arq
+        putStrLn "Cadastro realizado"
+        menuProfissionalAutenticado profissionais
+
+menuProfissional:: Clientes -> Profissionais -> IO()
+menuProfissional clientes profissionais = do
+    putStrLn "\nJá possui um cadastro?"
+    input <- getLine
+    if (input == "sim") then loginProfissional clientes profissionais
+    else if (input == "não") then cadastraProfissional clientes profissionais
+    else do
+        putStrLn "Não entendi o que você quis dizer"
+        menuProfissional clientes profissionais
+
+loginProfissional:: Clientes -> Profissionais -> IO()
+loginProfissional clientes profissionais = do
+    putStr "E-mail: "
+    email <- getLine
+
+    putStr "Senha: "
+    senha <- getLine
+
+    if (autenticaCliente email senha profissionais) then
+        menuProfissionalAutenticado profissionais
+    else do
+        putStrLn "E-mail ou senha incorretos"
+        menuProfissional clientes profissionais
+
+menuProfissionalAutenticado:: Profissionais -> IO()
+menuProfissionalAutenticado profissionais = do
+    putStrLn "\n\nmenuProfissionalAutenticado ainda n implementado\n"
