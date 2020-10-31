@@ -1,6 +1,7 @@
 module Util
 (   verificaCadastro,
-    autenticaUsuario
+    autenticaUsuario,
+    listar
 ) where
 
 verificaCadastro:: String -> [(String,String)] -> Bool
@@ -14,3 +15,8 @@ autenticaUsuario _ _ [] = False
 autenticaUsuario email senha (x:xs)
         | (x ==(email,senha)) = True
         | otherwise = autenticaUsuario email senha xs
+
+listar:: [String] -> String
+listar [] = ""
+listar (x:[]) = x 
+listar (x:xs) = x ++"\n" ++  listar xs

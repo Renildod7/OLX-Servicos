@@ -1,1 +1,1 @@
-([("aaa","aaa"),("dd","dd"),("dsa","dsa"),("meuemail","minhasenha")],[("birubiru","asd")])
+([("emc2","sc2","nc2","endc2","tc2"),("emc1","sc1","nc1","endc1","tc1")],[("emp1","sp1","np1","endp1","tp1"),("emp2","sp2","np2","endp2","tp2"),("emp3","sp3","np3","endp3","tp3")],[("Inform\225tica","\201 muito bom",0.1,"emp1")])
