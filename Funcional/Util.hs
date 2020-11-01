@@ -1,8 +1,11 @@
 module Util
 (   verificaCadastro,
     autenticaUsuario,
-    listar
+    listar,
+    quickSortServicoCategoria
 ) where
+
+import Dados
 
 verificaCadastro:: String -> [(String,String)] -> Bool
 verificaCadastro _ [] = False
@@ -20,3 +23,9 @@ listar:: [String] -> String
 listar [] = ""
 listar (x:[]) = x 
 listar (x:xs) = x ++"\n" ++  listar xs
+
+quickSortServicoCategoria:: Servicos -> Servicos
+quickSortServicoCategoria [] = []
+quickSortServicoCategoria (s:xs) = quickSortServicoCategoria [x | x <- xs, (getCategoria x) < (getCategoria s)]
+                                   ++ [s] ++
+                                   quickSortServicoCategoria [x | x <- xs,(getCategoria x) >= (getCategoria s)]
