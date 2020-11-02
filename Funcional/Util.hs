@@ -2,10 +2,12 @@ module Util
 (   verificaCadastro,
     autenticaUsuario,
     listar,
-    quickSortServicoCategoria
+    quickSortServicoCategoria,
+    limpaTela
 ) where
 
 import Dados
+import qualified System.Process
 
 verificaCadastro:: String -> [(String,String)] -> Bool
 verificaCadastro _ [] = False
@@ -29,3 +31,9 @@ quickSortServicoCategoria [] = []
 quickSortServicoCategoria (s:xs) = quickSortServicoCategoria [x | x <- xs, (getCategoria x) < (getCategoria s)]
                                    ++ [s] ++
                                    quickSortServicoCategoria [x | x <- xs,(getCategoria x) >= (getCategoria s)]
+
+
+limpaTela :: IO()
+limpaTela = do
+    _ <- System.Process.system "clear"
+    return ()

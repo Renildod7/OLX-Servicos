@@ -13,13 +13,15 @@ module Dados (
     getListaEmailSenhaProfissional,
     getProfissional,
     getCliente,
-    listarTodosServicos,
+    listarServicos,
     getCategoria,
+    getServicosProfissional,
+    getAtPendentesProfissional,
+    listarAtPendentes,
+    removeAtPendente,
     arquivoDados,
     especialidades
 ) where
-
-import Data.Ord
 
 arquivoDados = "dados.txt"
 especialidades = ["Arte","Informática","Segurança"]
@@ -47,17 +49,17 @@ type Preco = Float
 type Descricao = String
 type Avaliacao = Float
 
-type Atendimentos = (AtPendentes,AtConfirmados,AtRecusados,AtConcluidos) 
+type Atendimentos = (AtPendentes,AtAceitos,AtRecusados,AtConcluidos) 
 
 type AtPendentes = [AtPendente]
-type AtConfirmados = [AtConfirmado]
+type AtAceitos = [AtAceito]
 type AtRecusados = [AtRecusado]
 type AtConcluidos = [AtConcluido]
 
-type AtPendente = (EmailC,Servico)
-type AtConfirmado = (EmailC,Servico)
-type AtRecusado = (EmailC,Servico)
-type AtConcluido = (EmailC,Servico,Avaliacao)
+type AtPendente = (EmailC,NomeC,Servico)
+type AtAceito = (EmailC,NomeC,Servico)
+type AtRecusado = (EmailC,NomeC,Servico)
+type AtConcluido = (EmailC,NomeC,Servico,Avaliacao)
 
 
 
@@ -91,35 +93,76 @@ getCliente (x:xs) email senha = if getEmailSenhaCliente x == (email,senha) then 
 
 
 
-listarTodosServicos:: Servicos -> String
-listarTodosServicos servicos = listarTodosServicosAux servicos 1
+listarServicos:: Servicos -> String
+listarServicos servicos = listarServicosAux servicos 1
 
-listarTodosServicosAux:: Servicos -> Int -> String
-listarTodosServicosAux [] _ = ""
-listarTodosServicosAux ((categoria,descricao,preco,email,nome):[]) n = "\nNúmero: " ++ (show n) ++
+listarServicosAux:: Servicos -> Int -> String
+listarServicosAux [] _ = ""
+listarServicosAux ((categoria,descricao,preco,email,nome):[]) n = "\nNúmero: " ++ (show n) ++
                                                                   "\nCategoria: " ++ categoria ++ 
                                                                   "\nDescrição: " ++ descricao ++ 
                                                                   "\nA partir de: R$ " ++ (show preco) ++ 
                                                                   "\nProfissional: " ++ nome ++ 
-                                                                  "\nEmail para contato: " ++ email ++ "\n"
-listarTodosServicosAux ((categoria,descricao,preco,email,nome):xs) n = "\nNúmero: " ++ (show n) ++
+                                                                  "\nEmail: " ++ email ++ "\n"
+listarServicosAux ((categoria,descricao,preco,email,nome):xs) n = "\nNúmero: " ++ (show n) ++
                                                                   "\nCategoria: " ++ categoria ++ 
                                                                   "\nDescrição: " ++ descricao ++ 
                                                                   "\nA partir de: R$ " ++ (show preco) ++ 
                                                                   "\nProfissional: " ++ nome ++ 
                                                                   "\nEmail para contato: " ++ email ++
-                                                                  "\n" ++ listarTodosServicosAux xs (n+1)
-getCategoria:: Servico -> String
+                                                                  "\n" ++ listarServicosAux xs (n+1)
+
+
+-- Juntar com o sort
+
+getCategoria:: Servico -> Categoria
 getCategoria (categoria,_,_,_,_) = categoria
 
 
+getEmailPServico:: Servico -> EmailP
+getEmailPServico (_,_,_,emailP,_) = emailP
 
 
 
-{-
-remove:: (Ord a) => a->[a]->[a]
-remove a [] = []
-remove a (x:xs)
-| a==x = xs
-| otherwise = x:(remove a xs)
--}
+
+
+getServicosProfissional:: Servicos -> EmailP -> Servicos
+getServicosProfissional [] _ = []
+getServicosProfissional _ "" = []
+getServicosProfissional servicos emailP = [x | x <- servicos, (getEmailPServico x) == emailP]
+
+
+
+getAtPendentesProfissional:: AtPendentes -> EmailP -> AtPendentes
+getAtPendentesProfissional [] _ = []
+getAtPendentesProfissional _ "" = []
+getAtPendentesProfissional atPendentes@((_,_,s):t) emailP = [x | x <- atPendentes, (getEmailPServico s) == emailP]
+
+
+
+listarAtPendentes:: AtPendentes -> String
+listarAtPendentes atPendentes = listarAtPendentesAux atPendentes 1
+
+listarAtPendentesAux:: AtPendentes -> Int -> String
+listarAtPendentesAux [] _ = ""
+listarAtPendentesAux ((emailC,nomeC,(categoria,descricao,preco,email,nome)):[]) n = "\nNúmero: " ++ (show n) ++
+                                                                              "\nCategoria: " ++ categoria ++ 
+                                                                              "\nDescrição: " ++ descricao ++ 
+                                                                              "\nA partir de: R$ " ++ (show preco) ++ 
+                                                                              "\nCliente: " ++ nomeC ++ 
+                                                                              "\nEmail: " ++ emailC ++ "\n"
+listarAtPendentesAux ((emailC,nomeC,(categoria,descricao,preco,email,nome)):xs) n = "\nNúmero: " ++ (show n) ++
+                                                                              "\nCategoria: " ++ categoria ++ 
+                                                                              "\nDescrição: " ++ descricao ++ 
+                                                                              "\nA partir de: R$ " ++ (show preco) ++ 
+                                                                              "\nCliente: " ++ nomeC ++ 
+                                                                              "\nEmail: " ++ emailC ++
+                                                                              "\n" ++ listarAtPendentesAux xs (n+1)
+
+
+
+removeAtPendente:: AtPendente->AtPendentes->AtPendentes
+removeAtPendente at [] = []
+removeAtPendente at (x:xs)
+        | at==x = xs
+        | otherwise = x:(removeAtPendente at xs)
