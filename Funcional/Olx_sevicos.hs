@@ -107,6 +107,7 @@ menuClienteAutenticado dados@(clientes,_,_,_) cliente@(_,_,nome,_,_) = do
     let palavras = [map toLower x | x <- (words input)]
     if ((elem "listar" palavras) && (elem "serviços" palavras)) then menuClienteAutenticado dados cliente
     else if ((elem "contratar" palavras) && (elem "serviço" palavras)) then contratarServico dados cliente
+    else if ((elem "concluir" palavras) && (elem "atendimento" palavras)) then concluirAtendimento dados cliente        
     else if (elem "ajuda" palavras) then ajudaCliente dados cliente
     else do
         putStrLn "Não entendi, poderia repetir?"
@@ -170,7 +171,7 @@ cadastraCliente dados@(clientes,profissionais,servicos,atendimentos) = do
         hPutStrLn arq (show (((email,senha,nome,endereco,telefone):clientes),profissionais,servicos,atendimentos))
         hClose arq
         putStrLn "Cadastro realizado"
-        menuClienteAutenticado (((email,senha,nome,endereco,telefone):clientes),profissionais,servicos,atendimentos) (getCliente clientes email senha)
+        menuClienteAutenticado (((email,senha,nome,endereco,telefone):clientes),profissionais,servicos,atendimentos) (getCliente ((email,senha,nome,endereco,telefone):clientes) email senha)
 
 loginCliente:: Dados -> IO()
 loginCliente dados@(clientes,_,_,_) = do
@@ -394,11 +395,11 @@ cadastraServico dados@(clientes,profissionais,servicos,atendimentos) profissiona
     categoria <- getLine
     
     arq <- openFile arquivoDados WriteMode
-    hPutStrLn arq (show (clientes,profissionais,((categoria,descricao,(read preco),emailP,nomeP):servicos),atendimentos))
+    hPutStrLn arq (show (clientes,profissionais,((categoria,descricao,(read preco),emailP,nomeP,[]):servicos),atendimentos))
     hClose arq
 
     putStrLn "Serviço cadastrado com sucesso!"
-    menuProfissionalAutenticado (clientes,profissionais,((categoria,descricao,(read preco),emailP,nomeP):servicos),atendimentos) profissional
+    menuProfissionalAutenticado (clientes,profissionais,((categoria,descricao,(read preco),emailP,nomeP,[]):servicos),atendimentos) profissional
 
 
 contratarServico:: Dados -> Cliente -> IO()
@@ -438,6 +439,62 @@ contratarServicoListagem dados@(clientes,profissionais,servicos,(atPendentes,atA
         
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 atendimentosPendentes:: Dados -> Profissional -> IO()
 atendimentosPendentes dados@(clientes,profissionais,servicos,(atPendentes,atAceitos,atRecusados,atConcluidos)) profissional@(emailP,_,_,_,_) = do
  
@@ -445,7 +502,7 @@ atendimentosPendentes dados@(clientes,profissionais,servicos,(atPendentes,atAcei
     putStrLn "⎧⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎫"
     putStrLn "⎪             Estes são todos os atendimentos pendentes no momento             ⎪" 
     putStrLn "⎩⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎭"
-    putStrLn (listarAtPendentes (getAtPendentesProfissional atPendentes emailP))
+    putStrLn (listarAtNaoConcluidos (getAtPendentesProfissional atPendentes emailP))
 
     putStrLn "Para aceitar ou recusar um atendimento, informe a ação desejada." 
 
@@ -457,7 +514,7 @@ atendimentosPendentes dados@(clientes,profissionais,servicos,(atPendentes,atAcei
         input <- getLine
         
         let atendimento = head (drop ((read input)-1) (getAtPendentesProfissional atPendentes emailP))
-        let novoAtPendentes = removeAtPendente atendimento atPendentes
+        let novoAtPendentes = removeAtendimentoNC atendimento atPendentes
 
         arq <- openFile arquivoDados WriteMode
         hPutStrLn arq (show (clientes,profissionais,servicos,(novoAtPendentes,(atendimento:atAceitos),atRecusados,atConcluidos)))
@@ -472,7 +529,7 @@ atendimentosPendentes dados@(clientes,profissionais,servicos,(atPendentes,atAcei
         input <- getLine
         
         let atendimento = head (drop ((read input)-1) (getAtPendentesProfissional atPendentes emailP))
-        let novoAtPendentes = removeAtPendente atendimento atPendentes
+        let novoAtPendentes = removeAtendimentoNC atendimento atPendentes
 
         arq <- openFile arquivoDados WriteMode
         hPutStrLn arq (show (clientes,profissionais,servicos,(novoAtPendentes,atAceitos,(atendimento:atRecusados),atConcluidos)))
@@ -488,3 +545,48 @@ atendimentosPendentes dados@(clientes,profissionais,servicos,(atPendentes,atAcei
     else do
         putStrLn "Não entendi, poderia repetir?"
         menuProfissionalAutenticado dados profissional
+
+
+
+concluirAtendimento:: Dados -> Cliente -> IO()
+concluirAtendimento dados@(clientes,profissionais,servicos,(atPendentes,atAceitos,atRecusados,atConcluidos)) cliente@(emailC,_,_,_,_) = do
+
+    let atAceiosCliente = getAtAceitosCliente atAceitos emailC
+
+
+
+    limpaTela
+    putStrLn "⎧⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎫"
+    putStrLn "⎪             Estes são todos os atendimentos pendentes no momento             ⎪" 
+    putStrLn "⎩⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎭"
+    putStrLn (listarAtAceitos atAceiosCliente)
+
+
+    if(atAceiosCliente == []) then do
+        putStrLn "você não possui atendimento para concluir"
+        menuClienteAutenticado dados cliente
+    else do
+
+        putStrLn "Para finalizar um atendimento, indique seu número." 
+
+        input <- getLine
+
+        putStrLn "Avalie seu atendimento com um numero de 0 a 10."
+
+        avaliacao <- getLine
+            
+        let atendimento@
+                (emailC,nomeC,servico@
+                             (categoria,descricao,preco,emailP,nomeP,avaliacoes)) = head (drop ((read input)-1) atAceiosCliente)
+        let novoAtAceitos = removeAtendimentoNC atendimento atAceitos
+        let novoServicos = removeServico servico servicos
+        
+
+        arq <- openFile arquivoDados WriteMode
+        hPutStrLn arq (show (clientes,profissionais,((categoria,descricao,preco,emailP,nomeP,((read avaliacao):avaliacoes)):novoServicos),(atPendentes,novoAtAceitos,atRecusados,((emailC,nomeC,servico,(read avaliacao)):atConcluidos))))
+        hClose arq
+
+        putStrLn "Atendimento concluido"
+        menuClienteAutenticado (clientes,profissionais,((categoria,descricao,preco,emailP,nomeP,((read avaliacao):avaliacoes)):novoServicos),(atPendentes,novoAtAceitos,atRecusados,((emailC,nomeC,servico,(read avaliacao)):atConcluidos))) cliente
+
+

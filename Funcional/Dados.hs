@@ -17,8 +17,11 @@ module Dados (
     getCategoria,
     getServicosProfissional,
     getAtPendentesProfissional,
-    listarAtPendentes,
-    removeAtPendente,
+    listarAtNaoConcluidos,
+    getAtAceitosCliente,
+    removeAtendimentoNC,
+    removeServico,
+    listarAtAceitos,
     arquivoDados,
     especialidades
 ) where
@@ -43,10 +46,11 @@ type Endereco = String
 type Telefone = String
 
 type Servicos = [Servico]
-type Servico = (Categoria, Descricao, Preco, EmailP, NomeP)
+type Servico = (Categoria, Descricao, Preco, EmailP, NomeP, Avaliacoes)
 type Categoria = String
 type Preco = Float
 type Descricao = String
+type Avaliacoes = [Avaliacao]
 type Avaliacao = Float
 
 type Atendimentos = (AtPendentes,AtAceitos,AtRecusados,AtConcluidos) 
@@ -98,29 +102,29 @@ listarServicos servicos = listarServicosAux servicos 1
 
 listarServicosAux:: Servicos -> Int -> String
 listarServicosAux [] _ = ""
-listarServicosAux ((categoria,descricao,preco,email,nome):[]) n = "\nNúmero: " ++ (show n) ++
+listarServicosAux ((categoria,descricao,preco,emailP,nomeP,_):[]) n = "\nNúmero: " ++ (show n) ++
                                                                   "\nCategoria: " ++ categoria ++ 
                                                                   "\nDescrição: " ++ descricao ++ 
                                                                   "\nA partir de: R$ " ++ (show preco) ++ 
-                                                                  "\nProfissional: " ++ nome ++ 
-                                                                  "\nEmail: " ++ email ++ "\n"
-listarServicosAux ((categoria,descricao,preco,email,nome):xs) n = "\nNúmero: " ++ (show n) ++
+                                                                  "\nProfissional: " ++ nomeP ++ 
+                                                                  "\nEmail: " ++ emailP ++ "\n"
+listarServicosAux ((categoria,descricao,preco,emailP,nomeP,_):xs) n = "\nNúmero: " ++ (show n) ++
                                                                   "\nCategoria: " ++ categoria ++ 
                                                                   "\nDescrição: " ++ descricao ++ 
                                                                   "\nA partir de: R$ " ++ (show preco) ++ 
-                                                                  "\nProfissional: " ++ nome ++ 
-                                                                  "\nEmail para contato: " ++ email ++
+                                                                  "\nProfissional: " ++ nomeP ++ 
+                                                                  "\nEmail para contato: " ++ emailP ++
                                                                   "\n" ++ listarServicosAux xs (n+1)
 
 
 -- Juntar com o sort
 
 getCategoria:: Servico -> Categoria
-getCategoria (categoria,_,_,_,_) = categoria
+getCategoria (categoria,_,_,_,_,_) = categoria
 
 
 getEmailPServico:: Servico -> EmailP
-getEmailPServico (_,_,_,emailP,_) = emailP
+getEmailPServico (_,_,_,emailP,_,_) = emailP
 
 
 
@@ -140,29 +144,81 @@ getAtPendentesProfissional atPendentes@((_,_,s):t) emailP = [x | x <- atPendente
 
 
 
-listarAtPendentes:: AtPendentes -> String
-listarAtPendentes atPendentes = listarAtPendentesAux atPendentes 1
+listarAtNaoConcluidos:: AtPendentes -> String
+listarAtNaoConcluidos atPendentes = listarAtNaoConcluidosAux atPendentes 1
 
-listarAtPendentesAux:: AtPendentes -> Int -> String
-listarAtPendentesAux [] _ = ""
-listarAtPendentesAux ((emailC,nomeC,(categoria,descricao,preco,email,nome)):[]) n = "\nNúmero: " ++ (show n) ++
-                                                                              "\nCategoria: " ++ categoria ++ 
-                                                                              "\nDescrição: " ++ descricao ++ 
-                                                                              "\nA partir de: R$ " ++ (show preco) ++ 
-                                                                              "\nCliente: " ++ nomeC ++ 
-                                                                              "\nEmail: " ++ emailC ++ "\n"
-listarAtPendentesAux ((emailC,nomeC,(categoria,descricao,preco,email,nome)):xs) n = "\nNúmero: " ++ (show n) ++
-                                                                              "\nCategoria: " ++ categoria ++ 
-                                                                              "\nDescrição: " ++ descricao ++ 
-                                                                              "\nA partir de: R$ " ++ (show preco) ++ 
-                                                                              "\nCliente: " ++ nomeC ++ 
-                                                                              "\nEmail: " ++ emailC ++
-                                                                              "\n" ++ listarAtPendentesAux xs (n+1)
+listarAtNaoConcluidosAux:: AtPendentes -> Int -> String
+listarAtNaoConcluidosAux [] _ = ""
+listarAtNaoConcluidosAux ((emailC,nomeC,(categoria,descricao,preco,emailP,nomeP,_)):[]) n = "\nNúmero: " ++ (show n) ++
+                                                                                        "\nCategoria: " ++ categoria ++ 
+                                                                                        "\nDescrição: " ++ descricao ++ 
+                                                                                        "\nA partir de: R$ " ++ (show preco) ++ 
+                                                                                        "\nCliente: " ++ nomeC ++ 
+                                                                                        "\nEmail: " ++ emailC ++ "\n"
+listarAtNaoConcluidosAux ((emailC,nomeC,(categoria,descricao,preco,emailP,nomeP,_)):xs) n = "\nNúmero: " ++ (show n) ++
+                                                                                        "\nCategoria: " ++ categoria ++ 
+                                                                                        "\nDescrição: " ++ descricao ++ 
+                                                                                        "\nA partir de: R$ " ++ (show preco) ++ 
+                                                                                        "\nCliente: " ++ nomeC ++ 
+                                                                                        "\nEmail: " ++ emailC ++
+                                                                                        "\n" ++ listarAtNaoConcluidosAux xs (n+1)
 
 
 
-removeAtPendente:: AtPendente->AtPendentes->AtPendentes
-removeAtPendente at [] = []
-removeAtPendente at (x:xs)
+removeAtendimentoNC:: AtPendente->AtPendentes->AtPendentes
+removeAtendimentoNC at [] = []
+removeAtendimentoNC at (x:xs)
         | at==x = xs
-        | otherwise = x:(removeAtPendente at xs)
+        | otherwise = x:(removeAtendimentoNC at xs)
+
+
+
+{-
+getAtAceitosCliente:: AtAceitos -> EmailC -> AtAceitos
+getAtAceitosCliente [] _ = []
+getAtAceitosCliente _ "" = []
+getAtAceitosCliente atAceitos@((eC,_,_):t) emailC = [x | x <- atAceitos, eC == emailC]
+-}
+
+
+getAtAceitosCliente:: AtAceitos -> EmailC -> AtAceitos
+getAtAceitosCliente [] _ = []
+getAtAceitosCliente _ "" = []
+getAtAceitosCliente atAceitos@(a@(eC,_,_):[]) emailC = if (eC == emailC) then [a]
+                                                        else []
+getAtAceitosCliente atAceitos@(a@(eC,_,_):t) emailC = if (eC == emailC) then [a] ++ getAtAceitosCliente t emailC
+                                                        else [] ++ getAtAceitosCliente t emailC
+
+
+
+
+
+
+removeServico:: Servico->Servicos->Servicos
+removeServico s [] = []
+removeServico s (x:xs)
+        | s==x = xs
+        | otherwise = x:(removeServico s xs)
+
+
+
+
+
+listarAtAceitos:: AtPendentes -> String
+listarAtAceitos atPendentes = listarAtAceitosAux atPendentes 1
+
+listarAtAceitosAux:: AtPendentes -> Int -> String
+listarAtAceitosAux [] _ = ""
+listarAtAceitosAux ((emailC,nomeC,(categoria,descricao,preco,emailP,nomeP,_)):[]) n = "\nNúmero: " ++ (show n) ++
+                                                                                        "\nCategoria: " ++ categoria ++ 
+                                                                                        "\nDescrição: " ++ descricao ++ 
+                                                                                        "\nA partir de: R$ " ++ (show preco) ++ 
+                                                                                        "\nProfissional: " ++ nomeP ++ 
+                                                                                        "\nEmail: " ++ emailP ++ "\n"
+listarAtAceitosAux ((emailC,nomeC,(categoria,descricao,preco,emailP,nomeP,_)):xs) n = "\nNúmero: " ++ (show n) ++
+                                                                                        "\nCategoria: " ++ categoria ++ 
+                                                                                        "\nDescrição: " ++ descricao ++ 
+                                                                                        "\nA partir de: R$ " ++ (show preco) ++ 
+                                                                                        "\nProfissional: " ++ nomeP ++ 
+                                                                                        "\nEmail: " ++ emailP ++
+                                                                                        "\n" ++ listarAtAceitosAux xs (n+1)
