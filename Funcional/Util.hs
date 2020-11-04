@@ -3,10 +3,13 @@ module Util
     autenticaUsuario,
     listar,
     quickSortServicoCategoria,
+    quickSortServicoAvaliacao,
+    asd,
     limpaTela
 ) where
 
 import Dados
+import Data.Char
 import qualified System.Process
 
 verificaCadastro:: String -> [(String,String)] -> Bool
@@ -33,7 +36,22 @@ quickSortServicoCategoria (s:xs) = quickSortServicoCategoria [x | x <- xs, (getC
                                    quickSortServicoCategoria [x | x <- xs,(getCategoria x) >= (getCategoria s)]
 
 
+quickSortServicoAvaliacao:: Servicos -> Servicos
+quickSortServicoAvaliacao [] = []
+quickSortServicoAvaliacao (s:xs) = quickSortServicoAvaliacao [x | x <- xs, (mediaAvaliacaoServico x) > (mediaAvaliacaoServico s)]
+                                   ++ [s] ++
+                                   quickSortServicoAvaliacao [x | x <- xs,(mediaAvaliacaoServico x) <= (mediaAvaliacaoServico s)]
+
+
 limpaTela :: IO()
 limpaTela = do
     _ <- System.Process.system "clear"
     return ()
+
+
+asd:: [String] -> [String] -> Bool
+asd [] _ = False
+asd (x:xs) palavras = if (elem x palavras) then True
+                      else asd xs palavras
+
+

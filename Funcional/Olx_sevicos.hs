@@ -105,7 +105,7 @@ menuClienteAutenticado dados@(clientes,_,_,_) cliente@(_,_,nome,_,_) = do
 
     input <- getLine
     let palavras = [map toLower x | x <- (words input)]
-    if ((elem "listar" palavras) && (elem "serviços" palavras)) then menuClienteAutenticado dados cliente
+    if ((elem "listar" palavras) && (elem "serviços" palavras)) then listarServicosCliente dados cliente
     else if ((elem "contratar" palavras) && (elem "serviço" palavras)) then contratarServico dados cliente
     else if ((elem "concluir" palavras) && (elem "atendimento" palavras)) then concluirAtendimento dados cliente        
     else if (elem "ajuda" palavras) then ajudaCliente dados cliente
@@ -250,6 +250,7 @@ menuProfissionalAutenticado dados@(_,profissionais,servicos,_) profissional@(ema
 
     if ((elem "cadastrar" palavras) && (elem "serviço" palavras)) then cadastraServico dados profissional
     else if ((elem "listar" palavras) && (elem "atendimentos" palavras) && (elem "pendentes" palavras)) then atendimentosPendentes dados profissional
+    else if (elem "faturamento" palavras) then faturamentoServico dados profissional
     else do
         putStrLn "Não entendi, poderia repetir?"
         menuProfissionalAutenticado dados profissional
@@ -410,7 +411,7 @@ contratarServico dados cliente = do
     input <- getLine
     let palavras = [map toLower x | x <- (words input)]
     if ((elem "listar" palavras) && (elem "todos" palavras)) then contratarServicoListagem dados cliente
-    else if ((elem "categoria" palavras) && (elem "especifica" palavras)) then contratarServico dados cliente
+    else if ((elem "categoria" palavras) && (elem "especifica" palavras)) then contratarServicoCategoria dados cliente
     else do
         putStrLn "Não entendi, poderia repetir?"
         contratarServico dados cliente
@@ -437,21 +438,91 @@ contratarServicoListagem dados@(clientes,profissionais,servicos,(atPendentes,atA
         menuClienteAutenticado (clientes,profissionais,servicos,(((emailC,nomeC,servico):atPendentes),atAceitos,atRecusados,atConcluidos)) cliente
 
         
+contratarServicoCategoria:: Dados -> Cliente -> IO()
+contratarServicoCategoria dados@(clientes,profissionais,servicos,(atPendentes,atAceitos,atRecusados,atConcluidos)) cliente@(emailC,_,nomeC,_,_) = do
+
+    putStrLn "Informe a categoria desejada"
+
+    categ <- getLine
+
+    let servicosCategoria = quickSortServicoAvaliacao (getServicosCategoria servicos categ)
+
+    putStrLn "Estes são os serviços melhores avaliadas desta categoria"
+
+    putStrLn (listarServicos (take 2 servicosCategoria))
+
+    putStrLn "Gostaria de contratar algum desses serviços, ou gostaria de listar todos desta categoria?"
+
+    input <- getLine
+    let palavras = [map toLower x | x <- (words input)]
+
+    if (elem "contratar" palavras) then do
+        putStrLn "Informe o número do serviço que gostaria de contratar"
+        num  <- getLine 
+        let servico = head (drop ((read num)-1) servicosCategoria)
+
+
+
+        arq <- openFile arquivoDados WriteMode
+        hPutStrLn arq (show (clientes,profissionais,servicos,(((emailC,nomeC,servico):atPendentes),atAceitos,atRecusados,atConcluidos)))
+        hClose arq
+        putStrLn "Solicitação concluida"
+        menuClienteAutenticado (clientes,profissionais,servicos,(((emailC,nomeC,servico):atPendentes),atAceitos,atRecusados,atConcluidos)) cliente
+
+
+    else if ((elem "listar" palavras) && (elem "todos" palavras)) then do
+       
+        putStrLn "Estes são todos os serviços desta categoria"
+        putStrLn (listarServicos  servicosCategoria)
+
+        putStrLn "Informe o número do serviço que gostaria de contratar"
+        num  <- getLine 
+        let servico = head (drop ((read num)-1) servicosCategoria)
+
+
+
+        arq <- openFile arquivoDados WriteMode
+        hPutStrLn arq (show (clientes,profissionais,servicos,(((emailC,nomeC,servico):atPendentes),atAceitos,atRecusados,atConcluidos)))
+        hClose arq
+        putStrLn "Solicitação concluida"
+        menuClienteAutenticado (clientes,profissionais,servicos,(((emailC,nomeC,servico):atPendentes),atAceitos,atRecusados,atConcluidos)) cliente
+
+
+    else do
+        putStrLn "Não entendi, poderia repetir?"
+        contratarServicoCategoria dados cliente
+
+
+
+
+listarServicosCliente:: Dados -> Cliente -> IO()
+listarServicosCliente dados@(_,_,_,(_,atAceitos,atRecusados,atConcluidos)) cliente@(emailC,_,_,_,_) = do
+
+    putStrLn "Aceitos"
+    let aceitos = getAtNConcluidos atAceitos emailC
+    putStrLn (listarAtAceitos aceitos)
+
+    putStrLn "Recusados"
+    let recusados = getAtNConcluidos atRecusados emailC
+    putStrLn (listarAtAceitos recusados)
+
+    putStrLn "Concluidos"
+    let concluidos = getAtConcluidos atConcluidos emailC
+    putStrLn (listarAtConcluidos concluidos)
 
 
 
 
 
+faturamentoServico:: Dados -> Profissional -> IO()
+faturamentoServico dados@(_,_,servicos,(_,_,_,atConcluidos)) profissional@(emailP,_,_,_,_) = do
 
+    let servicosP = getServicosProfissional servicos emailP
+    let atConcluidosP = getAtConcluidosProfissional atConcluidos emailP
 
+    putStrLn (getFaturamentoProfissional servicosP atConcluidosP)
 
-
-
-
-
-
-
-
+    menuProfissionalAutenticado dados profissional
 
 
 
@@ -551,7 +622,7 @@ atendimentosPendentes dados@(clientes,profissionais,servicos,(atPendentes,atAcei
 concluirAtendimento:: Dados -> Cliente -> IO()
 concluirAtendimento dados@(clientes,profissionais,servicos,(atPendentes,atAceitos,atRecusados,atConcluidos)) cliente@(emailC,_,_,_,_) = do
 
-    let atAceiosCliente = getAtAceitosCliente atAceitos emailC
+    let atAceiosCliente = getAtNConcluidos atAceitos emailC
 
 
 
