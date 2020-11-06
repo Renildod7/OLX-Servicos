@@ -30,14 +30,11 @@ module Dados (
     getAtConcluidosProfissional,
     qtdConclusoesServico,
     getFaturamentoProfissional,
-    arquivoDados,
-    especialidades
 ) where
 
 import Data.Char
 
-arquivoDados = "dados.txt"
-especialidades = ["Arte","Informática","Segurança"]
+
 
 type Dados = (Clientes,Profissionais,Servicos,Atendimentos)
 
@@ -257,6 +254,7 @@ getServicosCategoria servicos categoria = [x | x <- servicos, (map toLower (getC
 
 
 getAtNConcluidos:: [(EmailC,NomeC,Servico)] -> EmailC -> [(EmailC,NomeC,Servico)]
+getAtNConcluidos [] _ = []
 getAtNConcluidos atendimentos@(x:xs) emailC = [x | x <- atendimentos, (getEmailCAtNConcluido x) == emailC]
 
 getEmailCAtNConcluido:: (EmailC,NomeC,Servico) -> EmailC
@@ -266,6 +264,7 @@ getEmailCAtNConcluido (emailC,_,_) = emailC
 
 
 getAtConcluidos:: AtConcluidos -> EmailC -> AtConcluidos
+getAtConcluidos [] _ = []
 getAtConcluidos atendimentos@(x:xs) emailC = [x | x <- atendimentos, (getEmailCAtConcluido x) == emailC]
 
 getEmailCAtConcluido:: (EmailC,NomeC,Servico,Avaliacao) -> EmailC
@@ -297,6 +296,7 @@ listarAtConcluidosAux ((emailC,nomeC,(categoria,descricao,preco,emailP,nomeP,_),
 
 
 getAtConcluidosProfissional:: AtConcluidos -> EmailP -> AtConcluidos
+getAtConcluidosProfissional [] _ = []
 getAtConcluidosProfissional atendimentos@(x:xs) emailP = [x | x <- atendimentos, (getEmailPAtConcluido x) == emailP]
 
 getEmailPAtConcluido:: (EmailC,NomeC,Servico,Avaliacao) -> EmailC
@@ -305,9 +305,25 @@ getEmailPAtConcluido (_,_,(_,_,_,emailP,_,_),_) = emailP
 
 
 getFaturamentoProfissional:: Servicos -> AtConcluidos -> String
+getFaturamentoProfissional [] _ = "\nNão existem serviços cadastrados"
 getFaturamentoProfissional servicos atPendentes = getFaturamentoProfissionalAux servicos atPendentes 1
 
 getFaturamentoProfissionalAux:: Servicos -> AtConcluidos -> Int -> String
+getFaturamentoProfissionalAux (servico@(categoria,descricao,preco,emailP,nomeP,_):[]) [] n = "\nNúmero: " ++ (show n)  ++
+                                                                                                     "\nCategoria: " ++ categoria ++
+                                                                                                     "\nDescricao: " ++ descricao ++
+                                                                                                     "\nPreço: R$ " ++ (show preco) ++
+                                                                                                     "\nFaturamento: R$ " ++ (show (0.0 * preco))
+
+
+
+getFaturamentoProfissionalAux (servico@(categoria,descricao,preco,emailP,nomeP,_):xs) [] n = "\nNúmero: " ++ (show n) ++
+                                                                                                      "\nCategoria: " ++ categoria ++
+                                                                                                    "\nDescricao: " ++ descricao ++
+                                                                                                    "\nPreço: R$ " ++ (show preco) ++
+                                                                                                    "\nFaturamento: R$ " ++ (show (0.0 * preco)) ++
+                                                                                                    "\n" ++ getFaturamentoProfissionalAux xs [] (n+1)
+
 getFaturamentoProfissionalAux (servico@(categoria,descricao,preco,emailP,nomeP,_):[]) atConcluidos n = "\nNúmero: " ++ (show n)  ++
                                                                                                      "\nCategoria: " ++ categoria ++
                                                                                                      "\nDescricao: " ++ descricao ++
@@ -338,3 +354,6 @@ comparaServico (categoria1,descricao1,preco1,emailP1,nomeP1,_) (categoria2,descr
 
 getServicoAtConcluido:: AtConcluido -> Servico
 getServicoAtConcluido (_,_,s,_) = s
+
+
+

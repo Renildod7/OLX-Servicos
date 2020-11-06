@@ -2,6 +2,8 @@ import System.IO
 import Data.Char
 import Dados
 import Util
+import Constantes
+import Template
 
 main = do 
     inicio
@@ -11,56 +13,58 @@ inicio = do
     arq <- openFile arquivoDados ReadMode
     dados <- hGetLine arq
     hClose arq
+
     limpaTela
-    putStrLn "⎧⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎫"
-    putStrLn "⎪                          Bem vindo a OLX Servicos                            ⎪"
-    putStrLn "⎩⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎭"
+    exibeBemVindoOLX
 
-    menuCadastro (read dados)
+    menu (read dados)
 
 
+-- OK
+menu:: Dados -> IO()
+menu dados = do
+    
 
-menuCadastro:: Dados -> IO()
-menuCadastro dados = do
-    putStrLn "\nComo poderiamos lhe ajudar?"
+
+    putStrLn "\nComo posso ajudar?\n"
     input <- getLine
     let palavras = [map toLower x | x <- (words input)]
-    if ((elem "cadastrar" palavras) && (elem "cliente" palavras)) then cadastraCliente dados
-    else if ((elem "cadastrar" palavras) && (elem "profissional" palavras)) then cadastraProfissional dados
-    else if ((elem "login" palavras) && (elem "cliente" palavras)) then loginCliente dados
-    else if ((elem "login" palavras) && (elem "profissional" palavras)) then loginProfissional dados
+    if ((procuraPalavras cadastrar palavras) && (procuraPalavras cliente palavras)) then cadastraCliente dados
+    else if ((procuraPalavras cadastrar palavras) && (procuraPalavras profissional palavras)) then cadastraProfissional dados
+    else if ((procuraPalavras login palavras) && (procuraPalavras cliente palavras)) then loginCliente dados
+    else if ((procuraPalavras login palavras) && (procuraPalavras profissional palavras)) then loginProfissional dados
     else if (elem "ajuda" palavras) then ajuda dados
+    else if (elem "sair" palavras) then sair
                                     
     else do
-        putStrLn "Não entendi, poderia repetir?"
+        putStrLn "\nNão entendi, poderia repetir?"
         putStrLn "Caso precise de ajuda digite Ajuda."
-        menuCadastro dados
-
+        pausa1s
+        menu dados
+--OK
 ajuda:: Dados -> IO()
 ajuda dados = do
 
     limpaTela
-    putStrLn "⎧⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎫"
-    putStrLn "⎪         Informe a ação que quer realizar seguido do tipo de usuario.         ⎪"
-    putStrLn "⎪      É possivel se cadastrar e logar, como cliente ou como profissional.     ⎪"
-    putStr   "⎪          Por exemplo: "
-    putStr (show "Eu gostaria de me cadastrar como um cliente") 
-    putStrLn "          ⎪"
-    putStrLn "⎪                                                                              ⎪"
-    putStrLn "⎪      Para contratar ou oferecer um serviço é necessário ter um cadastro.     ⎪"
-    putStrLn "⎩⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎭"
-
-    menuCadastro dados
+    exibeAjudaPrincipal
+    menu dados
 
 
+sair:: IO()
+sair = do
+    limpaTela
+    msgSair
+    pausa5s
+    limpaTela
 
 
-
-
-
-
-
-
+--OK
+voltaMenuPrincipal:: Dados -> IO()
+voltaMenuPrincipal dados = do
+    pausa1s
+    limpaTela
+    exibeBemVindoOLX
+    menu dados
 
 
 
@@ -97,50 +101,41 @@ ajuda dados = do
 
 
 
+
+--OK
 menuClienteAutenticado::Dados -> Cliente -> IO()
 menuClienteAutenticado dados@(clientes,_,_,_) cliente@(_,_,nome,_,_) = do
 
-
-    putStrLn "Como posso ajuda-lo?\n"
+    putStrLn "\nComo posso ajudar?\n"
 
     input <- getLine
     let palavras = [map toLower x | x <- (words input)]
-    if ((elem "listar" palavras) && (elem "serviços" palavras)) then listarServicosCliente dados cliente
-    else if ((elem "contratar" palavras) && (elem "serviço" palavras)) then contratarServico dados cliente
-    else if ((elem "concluir" palavras) && (elem "atendimento" palavras)) then concluirAtendimento dados cliente        
+    if ((procuraPalavras listar palavras) && (procuraPalavras servico palavras)) then listarServicosCliente dados cliente
+    else if ((procuraPalavras contratar palavras) && (procuraPalavras servico palavras)) then contratarServico dados cliente
+    else if ((procuraPalavras concluir palavras) && (procuraPalavras atendimento palavras)) then concluirAtendimento dados cliente        
     else if (elem "ajuda" palavras) then ajudaCliente dados cliente
+    else if (elem "sair" palavras) then voltaMenuPrincipal dados
     else do
-        putStrLn "Não entendi, poderia repetir?"
+        putStrLn "\nNão entendi, poderia repetir?"
         putStrLn "Caso precise de ajuda digite Ajuda."
-        menuCadastro dados
+        pausa1s
+        menuClienteAutenticado dados cliente
 
 
-
-
-
-
--- Ajuda cliente não implementada.
-
-
-
+--OK
 ajudaCliente:: Dados -> Cliente -> IO()
-ajudaCliente dados@(clientes,_,_,_) cliente = do
-    putStrLn ""
-    putStrLn "Informe a ação que quer realizar seguido do tipo de usuario."
-    putStrLn "É possivel se cadastrar e logar, como cliente ou como profissional."
-    putStr "Por exemplo: "
-    putStr (show "Eu gostaria de me cadastrar como um cliente")
-    putStrLn "."
+ajudaCliente dados cliente = do
+   
+    limpaTela
+    exibeAjudaCliente
     menuClienteAutenticado dados cliente
 
-
+--OK
 cadastraCliente:: Dados ->IO()
 cadastraCliente dados@(clientes,profissionais,servicos,atendimentos) = do
 
     limpaTela
-    putStrLn "⎧⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎫"
-    putStrLn "⎪           Informe os seguintes dados para para realizar o cadastro           ⎪"
-    putStrLn "⎩⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎭"
+    exibeInformeDadosCadastro
 
 
     putStrLn "\nNome: "
@@ -159,20 +154,27 @@ cadastraCliente dados@(clientes,profissionais,servicos,atendimentos) = do
     telefone <- getLine
 
     if (verificaCadastro email (getListaEmailSenhaCliente clientes) ) then do 
-            putStrLn "\n"
-            putStrLn "⎧⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎫"
-            putStrLn "⎪                            Cliente já cadastrado                             ⎪"
-            putStrLn "⎩⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎭"
-            menuCadastro dados
+
+        pausa1s
+        limpaTela
+        exibeClienteJaCadastrado
+        voltaMenuPrincipal dados
 
 
     else do
         arq <- openFile arquivoDados WriteMode
         hPutStrLn arq (show (((email,senha,nome,endereco,telefone):clientes),profissionais,servicos,atendimentos))
         hClose arq
-        putStrLn "Cadastro realizado"
+
+        pausa1s
+        limpaTela
+        exibeCadastroRealizado
+        pausa2s
+        limpaTela
+        exibeBemVindoMenuCliente
         menuClienteAutenticado (((email,senha,nome,endereco,telefone):clientes),profissionais,servicos,atendimentos) (getCliente ((email,senha,nome,endereco,telefone):clientes) email senha)
 
+--OK
 loginCliente:: Dados -> IO()
 loginCliente dados@(clientes,_,_,_) = do
    
@@ -183,14 +185,21 @@ loginCliente dados@(clientes,_,_,_) = do
     senha <- getLine
 
     if (autenticaUsuario email senha (getListaEmailSenhaCliente clientes)) then do
+        pausa1s
         limpaTela
-        putStrLn "⎧⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎫"
-        putStrLn "⎪                          Cliente logado com sucesso                          ⎪"
-        putStrLn "⎩⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎭"
+        exibeClienteLogado
+        pausa2s
+        limpaTela
+        exibeBemVindoMenuCliente
         menuClienteAutenticado dados (getCliente clientes email senha)
     else do
-        putStrLn "E-mail ou senha incorretos"
-        menuCadastro dados
+        pausa1s
+        limpaTela
+        exibeEmailSenhaIncorretos
+        pausa2s
+        limpaTela
+        exibeBemVindoOLX
+        menu dados
 
 
 
@@ -237,31 +246,43 @@ loginCliente dados@(clientes,_,_,_) = do
 
 
 
-
+--OK
 menuProfissionalAutenticado:: Dados -> Profissional-> IO()
 menuProfissionalAutenticado dados@(_,profissionais,servicos,_) profissional@(emailP,_,nomeP,_,_) = do
-    putStr "Bem Vindo "
-    putStr nomeP
-    putStrLn " !"
-    putStrLn "Como posso ajuda-lo?\n"
+
+    putStrLn "\nComo posso ajudar?\n"
 
     input <- getLine
     let palavras = [map toLower x | x <- (words input)]
 
-    if ((elem "cadastrar" palavras) && (elem "serviço" palavras)) then cadastraServico dados profissional
-    else if ((elem "listar" palavras) && (elem "atendimentos" palavras) && (elem "pendentes" palavras)) then atendimentosPendentes dados profissional
-    else if (elem "faturamento" palavras) then faturamentoServico dados profissional
+    if ((procuraPalavras cadastrar palavras) && (procuraPalavras servico palavras)) then cadastraServico dados profissional
+    else if ((procuraPalavras listar palavras) && (procuraPalavras atendimento palavras) && (procuraPalavras pendentes palavras)) then atendimentosPendentes dados profissional
+    else if (procuraPalavras faturamento palavras) then faturamentoServico dados profissional
+    else if (elem "ajuda" palavras) then ajudaProfissional dados profissional
+    else if (elem "sair" palavras) then voltaMenuPrincipal dados
     else do
-        putStrLn "Não entendi, poderia repetir?"
+        putStrLn "\nNão entendi, poderia repetir?"
+        putStrLn "Caso precise de ajuda digite Ajuda."
+        pausa1s
         menuProfissionalAutenticado dados profissional
 
+--OK
+ajudaProfissional:: Dados -> Profissional -> IO()
+ajudaProfissional dados profissional = do
+    
+    limpaTela
+    exibeAjudaProfissional
+    menuProfissionalAutenticado dados profissional
+
+--OK
 cadastraProfissional:: Dados ->IO()
 cadastraProfissional dados@(clientes, profissionais,servicos,atendimentos) = do
 
     limpaTela
-    putStrLn "⎧⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎫"
-    putStrLn "⎪           Informe os seguintes dados para para realizar o cadastro           ⎪"
-    putStrLn "⎩⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎭"
+    exibeInformeDadosCadastro
+
+    putStrLn "\nNome: "
+    nome <- getLine
 
     putStrLn "\nE-mail: "
     email <- getLine
@@ -269,26 +290,34 @@ cadastraProfissional dados@(clientes, profissionais,servicos,atendimentos) = do
     putStrLn "\nSenha: "
     senha <- getLine
 
-    putStrLn "\nNome: "
-    nome <- getLine
-
     putStrLn "\nEndereco: "
     endereco <- getLine
 
     putStrLn "\nTelefone: "
     telefone <- getLine
 
-    if (verificaCadastro email (getListaEmailSenhaProfissional profissionais) ) then do 
-        putStrLn "Profissional já cadastrado"
+    if (verificaCadastro email (getListaEmailSenhaProfissional profissionais)) then do 
+        pausa1s
+        limpaTela
+        exibeProfissionalJaCadastrado
+        voltaMenuPrincipal dados
 
     else do
         arq <- openFile arquivoDados WriteMode
         hPutStrLn arq (show (clientes,((email,senha,nome,endereco,telefone):profissionais),servicos,atendimentos))
         hClose arq
-        putStrLn "Cadastro realizado"
+
+        pausa1s
+        limpaTela
+        exibeCadastroRealizado
+        pausa2s
+        limpaTela
+        exibeBemVindoMenuProfissional
         menuProfissionalAutenticado (clientes,((email,senha,nome,endereco,telefone):profissionais),servicos,atendimentos) (getProfissional profissionais email senha)
 
 
+
+--OK
 loginProfissional:: Dados -> IO()
 loginProfissional dados@(_,profissionais,_,_) = do
     putStrLn "\nE-mail: "
@@ -298,14 +327,21 @@ loginProfissional dados@(_,profissionais,_,_) = do
     senha <- getLine
 
     if (autenticaUsuario email senha (getListaEmailSenhaProfissional profissionais)) then do
+        pausa1s
         limpaTela
-        putStrLn "⎧⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎫"
-        putStrLn "⎪                        Profissional logado com sucesso                       ⎪"
-        putStrLn "⎩⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎭"
+        exibeProfissionalLogado
+        pausa2s
+        limpaTela
+        exibeBemVindoMenuProfissional
         menuProfissionalAutenticado dados (getProfissional profissionais email senha)
     else do
-        putStrLn "E-mail ou senha incorretos"
-        menuCadastro dados
+        pausa1s
+        limpaTela
+        exibeEmailSenhaIncorretos
+        pausa2s
+        limpaTela
+        exibeBemVindoOLX
+        menu dados
 
 
 
@@ -371,14 +407,12 @@ loginProfissional dados@(_,profissionais,_,_) = do
 
 
 
-
+--OK MAIS OU MENOS
 cadastraServico:: Dados -> Profissional -> IO()
 cadastraServico dados@(clientes,profissionais,servicos,atendimentos) profissional@(emailP,_,nomeP,_,_) = do
     
     limpaTela
-    putStrLn "⎧⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎫"
-    putStrLn "⎪           Informe os seguintes dados para para realizar o cadastro           ⎪"
-    putStrLn "⎩⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎭"
+    exibeInformeDadosCadastro
 
     putStrLn "\nDescrição: "
     descricao <- getLine
@@ -386,140 +420,348 @@ cadastraServico dados@(clientes,profissionais,servicos,atendimentos) profissiona
     putStrLn "\nPreço: "
     preco <- getLine
 
-    putStrLn "\nEscolha uma dentre as seguintes categorias"
-    putStrLn "<pressione Enter para seguir>"
-    getLine
-    putStrLn (listar especialidades)
-    putStrLn ""
-    
-    putStrLn "\nCategoria: "
-    categoria <- getLine
-    
-    arq <- openFile arquivoDados WriteMode
-    hPutStrLn arq (show (clientes,profissionais,((categoria,descricao,(read preco),emailP,nomeP,[]):servicos),atendimentos))
-    hClose arq
-
-    putStrLn "Serviço cadastrado com sucesso!"
-    menuProfissionalAutenticado (clientes,profissionais,((categoria,descricao,(read preco),emailP,nomeP,[]):servicos),atendimentos) profissional
+    if (validaFloat preco) then do 
 
 
-contratarServico:: Dados -> Cliente -> IO()
-contratarServico dados cliente = do 
+        putStrLn "\nEscolha uma dentre as seguintes categorias\n"
+        pausa1s
+        putStrLn (listarString categorias)        
+        putStrLn "\nCategoria: "
+        categoria <- getLine
+        
+        if (elem categoria categorias) then do
+            arq <- openFile arquivoDados WriteMode
+            hPutStrLn arq (show (clientes,profissionais,((categoria,descricao,(read preco),emailP,nomeP,[]):servicos),atendimentos))
+            hClose arq
 
-    putStrLn "Gostaria de escolher uma categoria de serviços especifica ou listar todos os serviços disponiveis?"
-
-    input <- getLine
-    let palavras = [map toLower x | x <- (words input)]
-    if ((elem "listar" palavras) && (elem "todos" palavras)) then contratarServicoListagem dados cliente
-    else if ((elem "categoria" palavras) && (elem "especifica" palavras)) then contratarServicoCategoria dados cliente
+            pausa1s
+            limpaTela
+            exibeCadastroRealizado
+            pausa2s
+            limpaTela
+            exibeBemVindoMenuProfissional
+            menuProfissionalAutenticado (clientes,profissionais,((categoria,descricao,(read preco),emailP,nomeP,[]):servicos),atendimentos) profissional
+        else do
+            putStrLn "\nCategoria informada inválida"
+            pausa3s
+            cadastraServico dados profissional
     else do
-        putStrLn "Não entendi, poderia repetir?"
-        contratarServico dados cliente
+        putStrLn "\nPreço informado inválido"
+        pausa3s
+        cadastraServico dados profissional
 
+
+
+--OK
+contratarServico:: Dados -> Cliente -> IO()
+contratarServico dados@(_,_,servico,_) cliente = do 
+
+    if (servico == []) then do
+        pausa1s
+        limpaTela
+        exibeNaoExistemServicos
+        pausa2s
+        limpaTela
+        exibeBemVindoMenuCliente
+        menuClienteAutenticado dados cliente
+
+    else do
+        putStrLn "\nGostaria de escolher uma categoria de serviços ou listar todos"
+        putStrLn "os serviços disponiveis?\n"
+
+        input <- getLine
+        let palavras = [map toLower x | x <- (words input)]
+        if ((procuraPalavras listar palavras) && (procuraPalavras todos palavras)) then contratarServicoListagem dados cliente
+        else if (procuraPalavras categoria palavras) then contratarServicoCategoria dados cliente
+        else if (procuraPalavras voltar palavras) then do
+            pausa1s
+            limpaTela
+            exibeBemVindoMenuCliente
+            menuClienteAutenticado dados cliente
+        else do
+            putStrLn "\nNão entendi, poderia repetir?"
+            putStrLn "\nCaso queira sair digite voltar"
+            pausa1s
+            contratarServico dados cliente
+
+
+--OK
 contratarServicoListagem:: Dados -> Cliente -> IO()
 contratarServicoListagem dados@(clientes,profissionais,servicos,(atPendentes,atAceitos,atRecusados,atConcluidos)) cliente@(emailC,_,nomeC,_,_) = do
 
     let servicosOrd = quickSortServicoCategoria servicos
 
-    if servicosOrd == [] then putStrLn "Desculpe, não possuimos nenhum serviço disponivel no momento."
+    if servicosOrd == [] then do 
+        limpaTela
+        exibeNaoPossuiServico
+
     else do
-        putStrLn "Estes são todos os serviços que temos disponiveis no momento."
+        limpaTela
+        exibeTodosServicosDisponiveis
+        putStrLn ""
         putStrLn (listarServicos servicosOrd)
-        putStrLn "Caso queira contratar algum deles informe o número do serviço correspondente."
-        putStrLn "Caso não queira constratar nenhum deles digite sair"
+        putStrLn "\nCaso queira contratar algum deles informe o número do serviço correspondente."
+        putStrLn "Caso não queira contratar nenhum deles digite 0.\n"
 
         input <- getLine
-        let servico = head (drop ((read input)-1) servicosOrd)
-        
-        arq <- openFile arquivoDados WriteMode
-        hPutStrLn arq (show (clientes,profissionais,servicos,(((emailC,nomeC,servico):atPendentes),atAceitos,atRecusados,atConcluidos)))
-        hClose arq
-        putStrLn "Solicitação concluida"
-        menuClienteAutenticado (clientes,profissionais,servicos,(((emailC,nomeC,servico):atPendentes),atAceitos,atRecusados,atConcluidos)) cliente
 
-        
+        if ((validaInt input) ) then
+            if ((read input) == 0 ) then do
+                pausa1s
+                limpaTela
+                exibeBemVindoMenuCliente
+                menuClienteAutenticado dados cliente
+            else if (((read input) > 0) && ((read  input) <= (length servicosOrd))) then do 
+                
+                let servico = head (drop ((read input)-1) servicosOrd)
+                
+                arq <- openFile arquivoDados WriteMode
+                hPutStrLn arq (show (clientes,profissionais,servicos,(((emailC,nomeC,servico):atPendentes),atAceitos,atRecusados,atConcluidos)))
+                hClose arq
+
+                pausa1s
+                limpaTela
+                exibeSolicitacaoConcluida
+                pausa2s
+                limpaTela
+                exibeBemVindoMenuCliente
+                menuClienteAutenticado (clientes,profissionais,servicos,(((emailC,nomeC,servico):atPendentes),atAceitos,atRecusados,atConcluidos)) cliente
+            else do
+                putStrLn "\nOpção inválida"
+                pausa2s
+                contratarServicoListagem dados cliente
+        else do
+            putStrLn "\nOpção inválida"
+            pausa2s
+            contratarServicoListagem dados cliente
+
+-- OK
 contratarServicoCategoria:: Dados -> Cliente -> IO()
 contratarServicoCategoria dados@(clientes,profissionais,servicos,(atPendentes,atAceitos,atRecusados,atConcluidos)) cliente@(emailC,_,nomeC,_,_) = do
 
-    putStrLn "Informe a categoria desejada"
+    putStrLn "\nInforme a categoria desejada entre as seguintes:\n"
+
+    pausa1s
+    putStrLn (listarString categorias)
+    putStrLn ""
 
     categ <- getLine
 
-    let servicosCategoria = quickSortServicoAvaliacao (getServicosCategoria servicos categ)
+    if (elem (map toLower categ) voltar) then contratarServico dados cliente
 
-    putStrLn "Estes são os serviços melhores avaliadas desta categoria"
+    else if (elem categ categorias) then do
 
-    putStrLn (listarServicos (take 2 servicosCategoria))
+            let servicosCategoria = quickSortServicoAvaliacao (getServicosCategoria servicos categ)
 
-    putStrLn "Gostaria de contratar algum desses serviços, ou gostaria de listar todos desta categoria?"
+            if (servicosCategoria == []) then do 
 
-    input <- getLine
-    let palavras = [map toLower x | x <- (words input)]
+                pausa1s
+                limpaTela
+                exibeNaoPossuiServicosAvaliadosCategoria
+                pausa2s
+                limpaTela
+                exibeBemVindoMenuCliente
+                menuClienteAutenticado dados cliente
 
-    if (elem "contratar" palavras) then do
-        putStrLn "Informe o número do serviço que gostaria de contratar"
-        num  <- getLine 
-        let servico = head (drop ((read num)-1) servicosCategoria)
+            else do 
+
+                pausa1s
+                limpaTela
+                exibeServicosAvaliadosCategoria
+                pausa1s
+                putStrLn (listarServicos (take 2 servicosCategoria))
+
+                putStrLn "Gostaria de contratar algum desses serviços, ou gostaria de listar todos"
+                putStrLn "desta categoria?\n"
+
+                input <- getLine
+                let palavras = [map toLower x | x <- (words input)]
+
+                if (procuraPalavras contratar palavras) then do
+                    putStrLn "\nInforme o número do serviço que gostaria de contratar\n"
+                    putStrLn "Caso não queira contratar nenhum deles digite 0\n"
+                    
+                    num  <- getLine 
+
+                    if ((validaInt num)) then
+                        if ((read num) == 0) then contratarServico dados cliente
+                        else if (((read num) > 0) && ((read  num) <= (length servicosCategoria))) then do 
+                            
+                            let servico = head (drop ((read num)-1) servicosCategoria)
+                            
+                            arq <- openFile arquivoDados WriteMode
+                            hPutStrLn arq (show (clientes,profissionais,servicos,(((emailC,nomeC,servico):atPendentes),atAceitos,atRecusados,atConcluidos)))
+                            hClose arq
 
 
+                            pausa1s
+                            limpaTela
+                            exibeSolicitacaoConcluida
+                            pausa2s
+                            limpaTela
+                            exibeBemVindoMenuCliente
+                            menuClienteAutenticado (clientes,profissionais,servicos,(((emailC,nomeC,servico):atPendentes),atAceitos,atRecusados,atConcluidos)) cliente
+                        else do
+                            putStrLn "\nOpção inválida"
+                            pausa2s
+                            contratarServico dados cliente
+                    else do
+                        putStrLn "\nOpção inválida"
+                        pausa2s
+                        contratarServico dados cliente                            
 
-        arq <- openFile arquivoDados WriteMode
-        hPutStrLn arq (show (clientes,profissionais,servicos,(((emailC,nomeC,servico):atPendentes),atAceitos,atRecusados,atConcluidos)))
-        hClose arq
-        putStrLn "Solicitação concluida"
-        menuClienteAutenticado (clientes,profissionais,servicos,(((emailC,nomeC,servico):atPendentes),atAceitos,atRecusados,atConcluidos)) cliente
+                else if ((procuraPalavras listar palavras) && (procuraPalavras todos palavras)) then do
+                   
+                    pausa1s
+                    limpaTela
+                    exibeTodosServicosCategoria
+                    putStrLn (listarServicos  servicosCategoria)
 
+                    putStrLn "Informe o número do serviço que gostaria de contratar\n"
+                    putStrLn "Caso não queira contratar nenhum deles digite 0\n"
+                   
+                    num  <- getLine 
+                    if ((validaInt num)) then
+                        if ((read num) == 0) then contratarServico dados cliente
+                        else if (((read num) > 0) && ((read  num) <= (length servicosCategoria))) then do 
 
-    else if ((elem "listar" palavras) && (elem "todos" palavras)) then do
-       
-        putStrLn "Estes são todos os serviços desta categoria"
-        putStrLn (listarServicos  servicosCategoria)
+                            let servico = head (drop ((read num)-1) servicosCategoria)
+                            
+                            arq <- openFile arquivoDados WriteMode
+                            hPutStrLn arq (show (clientes,profissionais,servicos,(((emailC,nomeC,servico):atPendentes),atAceitos,atRecusados,atConcluidos)))
+                            hClose arq
 
-        putStrLn "Informe o número do serviço que gostaria de contratar"
-        num  <- getLine 
-        let servico = head (drop ((read num)-1) servicosCategoria)
+                            pausa1s
+                            limpaTela
+                            exibeSolicitacaoConcluida
+                            pausa2s
+                            limpaTela
+                            exibeBemVindoMenuCliente
+                            menuClienteAutenticado (clientes,profissionais,servicos,(((emailC,nomeC,servico):atPendentes),atAceitos,atRecusados,atConcluidos)) cliente
+                        
+                        else do
+                            putStrLn "\nOpção inválida"
+                            pausa2s
+                            contratarServico dados cliente
+                    else do
+                        putStrLn "\nOpção inválida"
+                        pausa2s
+                        contratarServico dados cliente 
 
-
-
-        arq <- openFile arquivoDados WriteMode
-        hPutStrLn arq (show (clientes,profissionais,servicos,(((emailC,nomeC,servico):atPendentes),atAceitos,atRecusados,atConcluidos)))
-        hClose arq
-        putStrLn "Solicitação concluida"
-        menuClienteAutenticado (clientes,profissionais,servicos,(((emailC,nomeC,servico):atPendentes),atAceitos,atRecusados,atConcluidos)) cliente
-
-
-    else do
-        putStrLn "Não entendi, poderia repetir?"
+                else do
+                    putStrLn "\nOpção inválida"
+                    pausa1s
+                    contratarServicoCategoria dados cliente
+    else do 
+        putStrLn "\nOpção inválida"
+        pausa1s
         contratarServicoCategoria dados cliente
 
 
 
-
+--OK
 listarServicosCliente:: Dados -> Cliente -> IO()
-listarServicosCliente dados@(_,_,_,(_,atAceitos,atRecusados,atConcluidos)) cliente@(emailC,_,_,_,_) = do
-
-    putStrLn "Aceitos"
-    let aceitos = getAtNConcluidos atAceitos emailC
-    putStrLn (listarAtAceitos aceitos)
-
-    putStrLn "Recusados"
-    let recusados = getAtNConcluidos atRecusados emailC
-    putStrLn (listarAtAceitos recusados)
-
-    putStrLn "Concluidos"
-    let concluidos = getAtConcluidos atConcluidos emailC
-    putStrLn (listarAtConcluidos concluidos)
+listarServicosCliente dados@(_,_,_,(atPendentes,atAceitos,atRecusados,atConcluidos)) cliente@(emailC,_,_,_,_) = do
 
 
+    putStrLn "\nQual tipo de atendimento você gostaria de ver?"
+    putStrLn "\nPendentes\nAceitos\nRecusados\nConcluidos\n"
+
+    input <- getLine
+    let palavras = [map toLower x | x <- (words input)]
+    
+    if (elem "pendentes" palavras) then do
+        let pendentes = getAtNConcluidos atPendentes emailC
+        if (pendentes == []) then do
+            
+            pausa1s
+            putStrLn "\nVocê não possui atendimentos pendentes"
+            pausa2s
+            listarServicosCliente dados cliente
+        else do
+            pausa1s
+            limpaTela
+            exibeTodosAtPendentes
+            pausa1s
+            putStrLn (listarAtAceitos pendentes)
+            pausa1s
+--            limpaTela
+            listarServicosCliente dados cliente
 
 
 
+    else if (elem "aceitos" palavras) then do
+        let aceitos = getAtNConcluidos atAceitos emailC
+        if (aceitos == []) then do
+            
+            pausa1s
+            putStrLn "\nVocê não possui atendimentos aceitos"
+            pausa2s
+            listarServicosCliente dados cliente
+        else do
+            pausa1s
+            limpaTela
+            exibeTodosAtAceitos
+            pausa1s
+            putStrLn (listarAtAceitos aceitos)
+            pausa1s
+            menuClienteAutenticado dados cliente
+
+    else if (elem "recusados" palavras) then do
+        let recusados = getAtNConcluidos atRecusados emailC
+        if (recusados == []) then do
+            
+            pausa1s
+            putStrLn "\nVocê não possui atendimentos recusados"
+            pausa2s
+            listarServicosCliente dados cliente
+        else do
+            pausa1s
+            limpaTela
+            exibeTodosAtAceitos
+            pausa1s
+            putStrLn (listarAtAceitos recusados)
+            pausa1s
+            menuClienteAutenticado dados cliente
+
+
+    else if (elem "concluidos" palavras) then do
+        let concluidos = getAtConcluidos atConcluidos emailC
+        if (concluidos == []) then do
+            
+            pausa1s
+            putStrLn "\nVocê não possui atendimentos concluidos"
+            pausa2s
+            listarServicosCliente dados cliente
+        else do
+            pausa1s
+            limpaTela
+            exibeTodosAtAceitos
+            pausa1s
+            putStrLn (listarAtConcluidos concluidos)
+            pausa1s
+            menuClienteAutenticado dados cliente
+    else if (procuraPalavras voltar palavras) then do
+        pausa1s
+        limpaTela
+        exibeBemVindoMenuCliente
+        menuClienteAutenticado dados cliente
+    else do
+        putStrLn "\nOpção inválida"
+        putStrLn "Caso queria voltar digite voltar"
+        pausa1s
+        
+        listarServicosCliente dados cliente
+
+
+
+--OK
 faturamentoServico:: Dados -> Profissional -> IO()
 faturamentoServico dados@(_,_,servicos,(_,_,_,atConcluidos)) profissional@(emailP,_,_,_,_) = do
 
     let servicosP = getServicosProfissional servicos emailP
     let atConcluidosP = getAtConcluidosProfissional atConcluidos emailP
-
+    pausa1s
     putStrLn (getFaturamentoProfissional servicosP atConcluidosP)
 
     menuProfissionalAutenticado dados profissional
@@ -568,54 +810,104 @@ faturamentoServico dados@(_,_,servicos,(_,_,_,atConcluidos)) profissional@(email
 
 atendimentosPendentes:: Dados -> Profissional -> IO()
 atendimentosPendentes dados@(clientes,profissionais,servicos,(atPendentes,atAceitos,atRecusados,atConcluidos)) profissional@(emailP,_,_,_,_) = do
- 
-    limpaTela
-    putStrLn "⎧⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎫"
-    putStrLn "⎪             Estes são todos os atendimentos pendentes no momento             ⎪" 
-    putStrLn "⎩⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎭"
-    putStrLn (listarAtNaoConcluidos (getAtPendentesProfissional atPendentes emailP))
-
-    putStrLn "Para aceitar ou recusar um atendimento, informe a ação desejada." 
-
-    input <- getLine
-    let palavras = [map toLower x | x <- (words input)]
-
-    if (elem "aceitar" palavras) then do
-        putStrLn "Indique o número do atendimento que deseja aceitar"
-        input <- getLine
-        
-        let atendimento = head (drop ((read input)-1) (getAtPendentesProfissional atPendentes emailP))
-        let novoAtPendentes = removeAtendimentoNC atendimento atPendentes
-
-        arq <- openFile arquivoDados WriteMode
-        hPutStrLn arq (show (clientes,profissionais,servicos,(novoAtPendentes,(atendimento:atAceitos),atRecusados,atConcluidos)))
-        hClose arq
-
-        atendimentosPendentes (clientes,profissionais,servicos,(novoAtPendentes,(atendimento:atAceitos),atRecusados,atConcluidos)) profissional
     
-    else if (elem "recusar" palavras) then do
-        
+    let atendimentoPendentes = getAtPendentesProfissional atPendentes emailP
 
-        putStrLn "Indique o número do atendimento que deseja aceitar"
-        input <- getLine
-        
-        let atendimento = head (drop ((read input)-1) (getAtPendentesProfissional atPendentes emailP))
-        let novoAtPendentes = removeAtendimentoNC atendimento atPendentes
-
-        arq <- openFile arquivoDados WriteMode
-        hPutStrLn arq (show (clientes,profissionais,servicos,(novoAtPendentes,atAceitos,(atendimento:atRecusados),atConcluidos)))
-        hClose arq
-
-        atendimentosPendentes (clientes,profissionais,servicos,(novoAtPendentes,atAceitos,(atendimento:atRecusados),atConcluidos)) profissional
-    
-
-
-    else if (elem "voltar" palavras) then do
-        limpaTela
+    if (atendimentoPendentes == []) then do 
+        pausa1s
+        putStrLn "\nNão existem atendimentos pendentes"
+        pausa1s
         menuProfissionalAutenticado dados profissional
+
     else do
-        putStrLn "Não entendi, poderia repetir?"
-        menuProfissionalAutenticado dados profissional
+
+        limpaTela
+        exibeTodosAtPendentesP
+        pausa1s
+        putStrLn (listarAtNaoConcluidos atendimentoPendentes)
+
+        putStrLn "Para aceitar ou recusar um atendimento, informe a ação desejada\n" 
+
+        input <- getLine
+        let palavras = [map toLower x | x <- (words input)]
+
+        if (elem "aceitar" palavras) then do
+            putStrLn "\nIndique o número do atendimento que deseja aceitar\n"
+            num <- getLine
+    
+
+            if ((validaInt num)) then
+                if (((read num) > 0) && ((read  num) <= (length atendimentoPendentes))) then do 
+
+                    let atendimento = head (drop ((read num)-1) (getAtPendentesProfissional atPendentes emailP))
+                    let novoAtPendentes = removeAtendimentoNC atendimento atPendentes
+
+                    arq <- openFile arquivoDados WriteMode
+                    hPutStrLn arq (show (clientes,profissionais,servicos,(novoAtPendentes,(atendimento:atAceitos),atRecusados,atConcluidos)))
+                    hClose arq
+
+                    pausa1s
+                    limpaTela
+                    exibeAtendimentoAceito
+                    pausa2s
+                    limpaTela
+                    exibeBemVindoMenuProfissional
+                    menuProfissionalAutenticado (clientes,profissionais,servicos,(novoAtPendentes,(atendimento:atAceitos),atRecusados,atConcluidos)) profissional
+        
+                else do
+                    putStrLn "\nOpção inválida"
+                    pausa2s
+                    atendimentosPendentes dados profissional
+            else do
+                putStrLn "\nOpção inválida"
+                pausa2s
+                atendimentosPendentes dados profissional 
+
+
+        else if (elem "recusar" palavras) then do
+            
+
+            putStrLn "\nIndique o número do atendimento que deseja aceitar\n"
+            num <- getLine
+
+            if ((validaInt num)) then
+                if (((read num) > 0) && ((read  num) <= (length atendimentoPendentes))) then do 
+
+
+                    let atendimento = head (drop ((read num)-1) (getAtPendentesProfissional atPendentes emailP))
+                    let novoAtPendentes = removeAtendimentoNC atendimento atPendentes
+
+                    arq <- openFile arquivoDados WriteMode
+                    hPutStrLn arq (show (clientes,profissionais,servicos,(novoAtPendentes,atAceitos,(atendimento:atRecusados),atConcluidos)))
+                    hClose arq
+
+                    pausa1s
+                    limpaTela
+                    exibeAtendimentoRecusado
+                    pausa2s
+                    limpaTela
+                    exibeBemVindoMenuProfissional
+                    menuProfissionalAutenticado (clientes,profissionais,servicos,(novoAtPendentes,atAceitos,(atendimento:atRecusados),atConcluidos)) profissional
+                else do
+                    putStrLn "\nOpção inválida"
+                    pausa2s
+                    atendimentosPendentes dados profissional
+            else do
+                putStrLn "\nOpção inválida"
+                pausa2s
+                atendimentosPendentes dados profissional
+
+
+        else if (elem "voltar" palavras) then do
+            pausa1s
+            limpaTela
+            exibeBemVindoMenuProfissional
+            menuProfissionalAutenticado dados profissional
+        else do
+            putStrLn "\nNão entendi, poderia repetir?"
+            putStrLn "Caso queira voltar digite voltar"
+            pausa2s
+            atendimentosPendentes dados profissional
 
 
 
@@ -624,40 +916,63 @@ concluirAtendimento dados@(clientes,profissionais,servicos,(atPendentes,atAceito
 
     let atAceiosCliente = getAtNConcluidos atAceitos emailC
 
-
-
-    limpaTela
-    putStrLn "⎧⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎫"
-    putStrLn "⎪             Estes são todos os atendimentos pendentes no momento             ⎪" 
-    putStrLn "⎩⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎭"
-    putStrLn (listarAtAceitos atAceiosCliente)
-
-
-    if(atAceiosCliente == []) then do
-        putStrLn "você não possui atendimento para concluir"
+    if (atAceiosCliente == []) then do
+        pausa1s
+        limpaTela
+        exibeNaoExistemAtAceitos
+        pausa2s
+        limpaTela
+        exibeBemVindoMenuCliente
         menuClienteAutenticado dados cliente
+
     else do
 
-        putStrLn "Para finalizar um atendimento, indique seu número." 
+        limpaTela
+        exibeTodosAtPendentesP
+        pausa1s
+        putStrLn (listarAtAceitos atAceiosCliente)
 
-        input <- getLine
 
-        putStrLn "Avalie seu atendimento com um numero de 0 a 10."
+        if(atAceiosCliente == []) then do
+            putStrLn "\nVocê não possui atendimentos para concluir"
+            pausa1s
+            limpaTela
+            exibeBemVindoMenuCliente
+            menuClienteAutenticado dados cliente
+        else do
 
-        avaliacao <- getLine
-            
-        let atendimento@
-                (emailC,nomeC,servico@
-                             (categoria,descricao,preco,emailP,nomeP,avaliacoes)) = head (drop ((read input)-1) atAceiosCliente)
-        let novoAtAceitos = removeAtendimentoNC atendimento atAceitos
-        let novoServicos = removeServico servico servicos
-        
+            putStrLn "\nPara finalizar um atendimento, indique seu número\n" 
 
-        arq <- openFile arquivoDados WriteMode
-        hPutStrLn arq (show (clientes,profissionais,((categoria,descricao,preco,emailP,nomeP,((read avaliacao):avaliacoes)):novoServicos),(atPendentes,novoAtAceitos,atRecusados,((emailC,nomeC,servico,(read avaliacao)):atConcluidos))))
-        hClose arq
+            input <- getLine
 
-        putStrLn "Atendimento concluido"
-        menuClienteAutenticado (clientes,profissionais,((categoria,descricao,preco,emailP,nomeP,((read avaliacao):avaliacoes)):novoServicos),(atPendentes,novoAtAceitos,atRecusados,((emailC,nomeC,servico,(read avaliacao)):atConcluidos))) cliente
+            putStrLn "\nAvalie seu atendimento com um numero de 0 a 10\n"
 
+            avaliacao <- getLine
+
+            if (validaFloat avaliacao) then do 
+                let atendimento@
+                        (emailC,nomeC,servico@
+                                     (categoria,descricao,preco,emailP,nomeP,avaliacoes)) = head (drop ((read input)-1) atAceiosCliente)
+                let novoAtAceitos = removeAtendimentoNC atendimento atAceitos
+                let novoServicos = removeServico servico servicos
+                
+
+                arq <- openFile arquivoDados WriteMode
+                hPutStrLn arq (show (clientes,profissionais,((categoria,descricao,preco,emailP,nomeP,((read avaliacao):avaliacoes)):novoServicos),(atPendentes,novoAtAceitos,atRecusados,((emailC,nomeC,servico,(read avaliacao)):atConcluidos))))
+                hClose arq
+
+                pausa1s
+                limpaTela
+                exibeAtendimentoConcluido
+                pausa2s
+                limpaTela
+                exibeBemVindoMenuCliente
+                menuClienteAutenticado (clientes,profissionais,((categoria,descricao,preco,emailP,nomeP,((read avaliacao):avaliacoes)):novoServicos),(atPendentes,novoAtAceitos,atRecusados,((emailC,nomeC,servico,(read avaliacao)):atConcluidos))) cliente
+
+            else do
+                putStrLn "\nAvaliação inválida"
+                pausa1s
+                limpaTela
+                exibeBemVindoMenuCliente
+                menuClienteAutenticado dados cliente
 
