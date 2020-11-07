@@ -122,7 +122,7 @@ listarServicosAux ((categoria,descricao,preco,emailP,nomeP,avaliacoes):xs) n = "
                                                                   "\nAvaliação: " ++ formataMediaAvaliacao (mediaAvaliacoes avaliacoes) ++ " ⭐" ++
                                                                   "\nPreço: R$ " ++ (show preco) ++ 
                                                                   "\nProfissional: " ++ nomeP ++ 
-                                                                  "\nEmail para contato: " ++ emailP ++
+                                                                  "\nEmail: " ++ emailP ++
                                                                   "\n" ++ listarServicosAux xs (n+1)
 
 
@@ -137,6 +137,9 @@ getEmailPServico (_,_,_,emailP,_,_) = emailP
 
 
 
+getEmailPAtendimento:: AtPendente -> EmailP
+getEmailPAtendimento (_,_,(_,_,_,emailP,_,_)) = emailP
+
 
 
 getServicosProfissional:: Servicos -> EmailP -> Servicos
@@ -149,7 +152,7 @@ getServicosProfissional servicos emailP = [x | x <- servicos, (getEmailPServico 
 getAtPendentesProfissional:: AtPendentes -> EmailP -> AtPendentes
 getAtPendentesProfissional [] _ = []
 getAtPendentesProfissional _ "" = []
-getAtPendentesProfissional atPendentes@((_,_,s):t) emailP = [x | x <- atPendentes, (getEmailPServico s) == emailP]
+getAtPendentesProfissional atPendentes emailP = [x | x <- atPendentes, (getEmailPAtendimento x) == emailP]
 
 
 
@@ -181,21 +184,6 @@ removeAtendimentoNC at [] = []
 removeAtendimentoNC at (x:xs)
         | at==x = xs
         | otherwise = x:(removeAtendimentoNC at xs)
-
-
-{-
-getAtAceitosCliente:: AtAceitos -> EmailC -> AtAceitos
-getAtAceitosCliente [] _ = []
-getAtAceitosCliente _ "" = []
-getAtAceitosCliente atAceitos@(a@(eC,_,_):[]) emailC = if (eC == emailC) then [a]
-                                                        else []
-getAtAceitosCliente atAceitos@(a@(eC,_,_):t) emailC = if (eC == emailC) then [a] ++ getAtAceitosCliente t emailC
-                                                        else [] ++ getAtAceitosCliente t emailC
-
--}
-
-
-
 
 
 removeServico:: Servico->Servicos->Servicos

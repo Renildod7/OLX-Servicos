@@ -313,7 +313,7 @@ cadastraProfissional dados@(clientes, profissionais,servicos,atendimentos) = do
         pausa2s
         limpaTela
         exibeBemVindoMenuProfissional
-        menuProfissionalAutenticado (clientes,((email,senha,nome,endereco,telefone):profissionais),servicos,atendimentos) (getProfissional profissionais email senha)
+        menuProfissionalAutenticado (clientes,((email,senha,nome,endereco,telefone):profissionais),servicos,atendimentos) (getProfissional ((email,senha,nome,endereco,telefone):profissionais) email senha)
 
 
 
