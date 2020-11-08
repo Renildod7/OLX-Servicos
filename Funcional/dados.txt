@@ -1,1 +1,1 @@
-([("cliente1","cliente1","cliente1","clasd","asd")],[("nome2","nome2","nome2","nome2","nome2"),("nome1","nome1","nome1","nome1","nome")],[("Seguran\231a","descricao nome2",4651.0,"nome2","nome2",[]),("Arte","descri\231\227o do servico nome 1",25.0,"nome1","nome1",[])],([("cliente1","cliente1",("Seguran\231a","descricao nome2",4651.0,"nome2","nome2",[])),("cliente1","cliente1",("Arte","descri\231\227o do servico nome 1",25.0,"nome1","nome1",[]))],[],[],[]))
+([],[],[],([],[],[],[]))

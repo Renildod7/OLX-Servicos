@@ -1,6 +1,5 @@
 module Constantes
-(
-    arquivoDados,
+(   arquivoDados,
     categorias,
     cadastrar,
     login,
@@ -21,13 +20,8 @@ module Constantes
     voltar
 ) where
 
-
-
-
-
-
 arquivoDados = "dados.txt"
-categorias = ["Arte","Informática","Segurança","Aulas Particulares"] -- Adicionar as outras
+categorias = ["Arte","Construção","Consultoria","Design","Moda","Saude","Informatica"]
 
 cadastrar = ["cadastrar","cadastro","cadastra"]
 login = ["login","entrar","acessar"]
@@ -45,8 +39,4 @@ categoria = ["categoria","categorias"]
 especifica = ["especifica","especificas","especificar"]
 aceitar = ["aceitar","aceita","aceito","aceitos"]
 recusar = ["recusar","recusa","negar"]
-
-
-
-
 voltar = ["voltar","volta"]
