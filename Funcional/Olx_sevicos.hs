@@ -601,7 +601,7 @@ listarServicosCliente dados@(_,_,_,(atPendentes,atAceitos,atRecusados,atConcluid
             limpaTela
             exibeTodosAtConcluidos
             pausa1s
-            putStrLn (listarAtAceitos concluidos)
+            putStrLn (listarAtConcluidos concluidos)
             pausa1s
             menuClienteAutenticado dados cliente
     else if (procuraPalavras voltar palavras) then do
