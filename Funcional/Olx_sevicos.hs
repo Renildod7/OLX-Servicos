@@ -8,6 +8,8 @@ import Template
 main = do 
     inicio
 
+
+-- Carrega os dados e inicia o programa
 inicio:: IO()
 inicio = do
     arq <- openFile arquivoDados ReadMode
@@ -20,7 +22,7 @@ inicio = do
     menu (read dados)
 
 
--- OK
+-- Menu principal do programa, responsável pelo cadastro e o login dos usuários
 menu:: Dados -> IO()
 menu dados = do
     
@@ -41,7 +43,9 @@ menu dados = do
         putStrLn "Caso precise de ajuda digite Ajuda."
         pausa1s
         menu dados
---OK
+
+
+-- Ajuda do menu Principal, exibe as funcionalidade existentes
 ajuda:: Dados -> IO()
 ajuda dados = do
 
@@ -50,6 +54,7 @@ ajuda dados = do
     menu dados
 
 
+-- Encerra o programa
 sair:: IO()
 sair = do
     limpaTela
@@ -58,7 +63,7 @@ sair = do
     limpaTela
 
 
---OK
+-- Sai do menu de cliente ou profissional e volta para o menu principal
 voltaMenuPrincipal:: Dados -> IO()
 voltaMenuPrincipal dados = do
     pausa1s
@@ -67,42 +72,7 @@ voltaMenuPrincipal dados = do
     menu dados
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
---OK
+-- Menu do Cliente, responsável pelas funcionalidade do cliente
 menuClienteAutenticado::Dados -> Cliente -> IO()
 menuClienteAutenticado dados@(clientes,_,_,_) cliente@(_,_,nome,_,_) = do
 
@@ -122,7 +92,7 @@ menuClienteAutenticado dados@(clientes,_,_,_) cliente@(_,_,nome,_,_) = do
         menuClienteAutenticado dados cliente
 
 
---OK
+-- Ajuda do menu do Cliente, exibe as funcionalidade existentes
 ajudaCliente:: Dados -> Cliente -> IO()
 ajudaCliente dados cliente = do
    
@@ -130,7 +100,9 @@ ajudaCliente dados cliente = do
     exibeAjudaCliente
     menuClienteAutenticado dados cliente
 
---OK
+
+-- Cadastra um novo Cliente, caso o cliente já exista o usuário é redirecionado para o menu principal, 
+-- caso não exista, um novo cliente é cadastrado e o usuário é redirecionado para  menu de cliente
 cadastraCliente:: Dados ->IO()
 cadastraCliente dados@(clientes,profissionais,servicos,atendimentos) = do
 
@@ -174,7 +146,8 @@ cadastraCliente dados@(clientes,profissionais,servicos,atendimentos) = do
         exibeBemVindoMenuCliente
         menuClienteAutenticado (((email,senha,nome,endereco,telefone):clientes),profissionais,servicos,atendimentos) (getCliente ((email,senha,nome,endereco,telefone):clientes) email senha)
 
---OK
+
+-- Faz o login do cliente no sistema
 loginCliente:: Dados -> IO()
 loginCliente dados@(clientes,_,_,_) = do
    
@@ -202,51 +175,7 @@ loginCliente dados@(clientes,_,_,_) = do
         menu dados
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
---OK
+-- Menu do Profissional, responsavel pelas funcionalidades do profissional
 menuProfissionalAutenticado:: Dados -> Profissional-> IO()
 menuProfissionalAutenticado dados@(_,profissionais,servicos,_) profissional@(emailP,_,nomeP,_,_) = do
 
@@ -266,7 +195,8 @@ menuProfissionalAutenticado dados@(_,profissionais,servicos,_) profissional@(ema
         pausa1s
         menuProfissionalAutenticado dados profissional
 
---OK
+
+-- Ajuda do menu do Profissional, exibe as funcionalidade existentes
 ajudaProfissional:: Dados -> Profissional -> IO()
 ajudaProfissional dados profissional = do
     
@@ -274,7 +204,9 @@ ajudaProfissional dados profissional = do
     exibeAjudaProfissional
     menuProfissionalAutenticado dados profissional
 
---OK
+
+-- Cadastra um novo Profissional, caso o profissional já exista o usuário é redirecionado para o menu principal, 
+-- caso não exista, um novo profissional é cadastrado e o usuário é redirecionado para menu de profissional
 cadastraProfissional:: Dados ->IO()
 cadastraProfissional dados@(clientes, profissionais,servicos,atendimentos) = do
 
@@ -316,8 +248,7 @@ cadastraProfissional dados@(clientes, profissionais,servicos,atendimentos) = do
         menuProfissionalAutenticado (clientes,((email,senha,nome,endereco,telefone):profissionais),servicos,atendimentos) (getProfissional ((email,senha,nome,endereco,telefone):profissionais) email senha)
 
 
-
---OK
+-- Faz o login do profissional no sistema
 loginProfissional:: Dados -> IO()
 loginProfissional dados@(_,profissionais,_,_) = do
     putStrLn "\nE-mail: "
@@ -344,70 +275,7 @@ loginProfissional dados@(_,profissionais,_,_) = do
         menu dados
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
---OK MAIS OU MENOS
+-- Cadastra um novo serviço no sistema, apenas um profissional pode cadastrar um serviço 
 cadastraServico:: Dados -> Profissional -> IO()
 cadastraServico dados@(clientes,profissionais,servicos,atendimentos) profissional@(emailP,_,nomeP,_,_) = do
     
@@ -452,7 +320,7 @@ cadastraServico dados@(clientes,profissionais,servicos,atendimentos) profissiona
 
 
 
---OK
+-- Contrata um serviço, apenas um cliente pode contratar um serviço
 contratarServico:: Dados -> Cliente -> IO()
 contratarServico dados@(_,_,servico,_) cliente = do 
 
@@ -485,7 +353,7 @@ contratarServico dados@(_,_,servico,_) cliente = do
             contratarServico dados cliente
 
 
---OK
+-- Função auxiliar da função contratarServico
 contratarServicoListagem:: Dados -> Cliente -> IO()
 contratarServicoListagem dados@(clientes,profissionais,servicos,(atPendentes,atAceitos,atRecusados,atConcluidos)) cliente@(emailC,_,nomeC,_,_) = do
 
@@ -535,7 +403,8 @@ contratarServicoListagem dados@(clientes,profissionais,servicos,(atPendentes,atA
             pausa2s
             contratarServicoListagem dados cliente
 
--- OK
+
+-- Função auxiliar da função contratarServico
 contratarServicoCategoria:: Dados -> Cliente -> IO()
 contratarServicoCategoria dados@(clientes,profissionais,servicos,(atPendentes,atAceitos,atRecusados,atConcluidos)) cliente@(emailC,_,nomeC,_,_) = do
 
@@ -658,8 +527,7 @@ contratarServicoCategoria dados@(clientes,profissionais,servicos,(atPendentes,at
         contratarServicoCategoria dados cliente
 
 
-
---OK
+-- Mostra os serviços que um cliente ja contratou
 listarServicosCliente:: Dados -> Cliente -> IO()
 listarServicosCliente dados@(_,_,_,(atPendentes,atAceitos,atRecusados,atConcluidos)) cliente@(emailC,_,_,_,_) = do
 
@@ -685,7 +553,6 @@ listarServicosCliente dados@(_,_,_,(atPendentes,atAceitos,atRecusados,atConcluid
             pausa1s
             putStrLn (listarAtAceitos pendentes)
             pausa1s
---            limpaTela
             listarServicosCliente dados cliente
 
 
@@ -754,8 +621,7 @@ listarServicosCliente dados@(_,_,_,(atPendentes,atAceitos,atRecusados,atConcluid
         listarServicosCliente dados cliente
 
 
-
---OK
+-- Informa o faturamento de cada um dos serviços que um profissional oferece 
 faturamentoServico:: Dados -> Profissional -> IO()
 faturamentoServico dados@(_,_,servicos,(_,_,_,atConcluidos)) profissional@(emailP,_,_,_,_) = do
 
@@ -767,47 +633,7 @@ faturamentoServico dados@(_,_,servicos,(_,_,_,atConcluidos)) profissional@(email
     menuProfissionalAutenticado dados profissional
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+-- Mostra os atendimentos pendentes que um profissional possui
 atendimentosPendentes:: Dados -> Profissional -> IO()
 atendimentosPendentes dados@(clientes,profissionais,servicos,(atPendentes,atAceitos,atRecusados,atConcluidos)) profissional@(emailP,_,_,_,_) = do
     
@@ -911,6 +737,7 @@ atendimentosPendentes dados@(clientes,profissionais,servicos,(atPendentes,atAcei
 
 
 
+-- Concluir um atendimento aceito que um cliente possui
 concluirAtendimento:: Dados -> Cliente -> IO()
 concluirAtendimento dados@(clientes,profissionais,servicos,(atPendentes,atAceitos,atRecusados,atConcluidos)) cliente@(emailC,_,_,_,_) = do
 

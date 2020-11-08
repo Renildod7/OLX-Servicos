@@ -29,14 +29,7 @@ module Template
     exibeAtendimentoRecusado,
     exibeAtendimentoConcluido,
     msgSair
-
-
-
 ) where
-
-
-
-
 
 exibeBemVindoOLX:: IO()
 exibeBemVindoOLX = do
