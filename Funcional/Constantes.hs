@@ -21,7 +21,7 @@ module Constantes
 ) where
 
 arquivoDados = "dados.txt"
-categorias = ["Arte","Informática","Segurança","Aulas Particulares"]
+categorias = ["Arte","Construção","Consultoria","Design","Moda","Saude","Informatica"]
 
 cadastrar = ["cadastrar","cadastro","cadastra"]
 login = ["login","entrar","acessar"]

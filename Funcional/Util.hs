@@ -28,20 +28,22 @@ verificaCadastro email (x:xs)
         | otherwise = verificaCadastro email xs
 
 
--- Verifica se o email e senha informados estão corretos
+-- Verifica se o email e senha informados estao corretos
 autenticaUsuario:: String -> String -> [(String,String)] -> Bool
 autenticaUsuario _ _ [] = False
 autenticaUsuario email senha (x:xs)
         | (x ==(email,senha)) = True
         | otherwise = autenticaUsuario email senha xs
 
+
+-- Lista as String de uma lista uma abaixo da outra
 listarString:: [String] -> String
 listarString [] = ""
 listarString (x:[]) = x 
 listarString (x:xs) = x ++"\n" ++  listarString xs
 
 
--- Ordena os serviços pela categoria
+-- Ordena os servicos pela categoria
 quickSortServicoCategoria:: Servicos -> Servicos
 quickSortServicoCategoria [] = []
 quickSortServicoCategoria (s:xs) = quickSortServicoCategoria [x | x <- xs, (getCategoria x) < (getCategoria s)]
@@ -49,7 +51,7 @@ quickSortServicoCategoria (s:xs) = quickSortServicoCategoria [x | x <- xs, (getC
                                    quickSortServicoCategoria [x | x <- xs,(getCategoria x) >= (getCategoria s)]
 
 
--- ordena os servicos pela avaliação
+-- ordena os servicos pela avaliacao
 quickSortServicoAvaliacao:: Servicos -> Servicos
 quickSortServicoAvaliacao [] = []
 quickSortServicoAvaliacao (s:xs) = quickSortServicoAvaliacao [x | x <- xs, (mediaAvaliacaoServico x) > (mediaAvaliacaoServico s)]
@@ -57,7 +59,7 @@ quickSortServicoAvaliacao (s:xs) = quickSortServicoAvaliacao [x | x <- xs, (medi
                                    quickSortServicoAvaliacao [x | x <- xs,(mediaAvaliacaoServico x) <= (mediaAvaliacaoServico s)]
 
 
--- Verifica se uma das Strings da primeira lista está na seunda lista
+-- Verifica se uma das Strings da primeira lista esta na segunda lista
 procuraPalavras:: [String] -> [String] -> Bool
 procuraPalavras [] _ = False
 procuraPalavras (x:xs) palavras = if (elem x palavras) then True
@@ -84,28 +86,28 @@ limpaTela = do
     return ()
 
 
--- Faz o sistema para por 1 segundo
+-- Faz o sistema parar por 1 segundo
 pausa1s :: IO()
 pausa1s = do
     _ <- System.Process.system "sleep 1s"
     return ()
 
 
--- Faz o sistema para por 2 segundos
+-- Faz o sistema parar por 2 segundos
 pausa2s :: IO()
 pausa2s = do
     _ <- System.Process.system "sleep 2s"
     return ()
 
 
--- Faz o sistema para por 3 segundos
+-- Faz o sistema parar por 3 segundos
 pausa3s :: IO()
 pausa3s = do
     _ <- System.Process.system "sleep 3s"
     return ()
 
 
--- Faz o sistema para por 5 segundos
+-- Faz o sistema parar por 5 segundos
 pausa5s :: IO()
 pausa5s = do
     _ <- System.Process.system "sleep 5s"

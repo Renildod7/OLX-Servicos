@@ -34,8 +34,6 @@ module Dados (
 
 import Data.Char
 
-
-
 type Dados = (Clientes,Profissionais,Servicos,Atendimentos)
 
 type Clientes = [Cliente]
@@ -73,8 +71,6 @@ type AtRecusado = (EmailC,NomeC,Servico)
 type AtConcluido = (EmailC,NomeC,Servico,Avaliacao)
 
 
-
-
 -- Retorna o email e a senha de um cliente
 getEmailSenhaCliente:: Cliente -> (String,String)
 getEmailSenhaCliente (email,senha,_,_,_) = (email,senha)
@@ -86,12 +82,12 @@ getListaEmailSenhaCliente [] = []
 getListaEmailSenhaCliente (x:xs) = [(getEmailSenhaCliente x)] ++ getListaEmailSenhaCliente xs
 
 
--- Retorna o emial e senha de u profissional
+-- Retorna o email e senha de um profissional
 getEmailSenhaProfissional:: Profissional -> (String,String)
 getEmailSenhaProfissional (email,senha,_,_,_) = (email,senha)
 
 
--- Retorna uma lista com todos os emails e senhas dos clientes
+-- Retorna uma lista com todos os emails e senhas dos profissionais
 getListaEmailSenhaProfissional:: Profissionais -> [(String,String)]
 getListaEmailSenhaProfissional [] = []
 getListaEmailSenhaProfissional (x:xs) = [(getEmailSenhaProfissional x)] ++ getListaEmailSenhaProfissional xs
@@ -111,7 +107,7 @@ getCliente (x:xs) email senha = if getEmailSenhaCliente x == (email,senha) then 
                                      else getCliente xs email senha
 
 
--- Retorna uma String com a representação dos servicos receidos
+-- Retorna uma String com a representacao dos servicos recebidos
 listarServicos:: Servicos -> String
 listarServicos servicos = listarServicosAux servicos 1
 
@@ -124,6 +120,7 @@ listarServicosAux ((categoria,descricao,preco,emailP,nomeP,avaliacoes):[]) n = "
                                                                   "\nPreço: R$ " ++ (show preco) ++ 
                                                                   "\nProfissional: " ++ nomeP ++ 
                                                                   "\nEmail: " ++ emailP ++ "\n"
+
 listarServicosAux ((categoria,descricao,preco,emailP,nomeP,avaliacoes):xs) n = "\nNúmero: " ++ (show n) ++
                                                                   "\nCategoria: " ++ categoria ++ 
                                                                   "\nDescrição: " ++ descricao ++ 
@@ -176,6 +173,7 @@ listarAtNaoConcluidosAux ((emailC,nomeC,(categoria,descricao,preco,emailP,nomeP,
                                                                                                      "\nPreço: R$ " ++ (show preco) ++ 
                                                                                                      "\nCliente: " ++ nomeC ++ 
                                                                                                      "\nEmail: " ++ emailC ++ "\n"
+
 listarAtNaoConcluidosAux ((emailC,nomeC,(categoria,descricao,preco,emailP,nomeP,avaliacoes)):xs) n = "\nNúmero: " ++ (show n) ++
                                                                                                      "\nCategoria: " ++ categoria ++ 
                                                                                                      "\nDescrição: " ++ descricao ++ 
@@ -202,8 +200,7 @@ removeServico s (x:xs)
         | otherwise = x:(removeServico s xs)
 
 
-
--- Retorna um String com a representação dos atendimentos pendentes recebidos
+-- Retorna um String com a representacao dos atendimentos pendentes recebidos
 listarAtAceitos:: AtPendentes -> String
 listarAtAceitos atPendentes = listarAtAceitosAux atPendentes 1
 
@@ -216,6 +213,7 @@ listarAtAceitosAux ((emailC,nomeC,(categoria,descricao,preco,emailP,nomeP,avalia
                                                                                         "\nPreço: R$ " ++ (show preco) ++ 
                                                                                         "\nProfissional: " ++ nomeP ++ 
                                                                                         "\nEmail: " ++ emailP ++ "\n"
+
 listarAtAceitosAux ((emailC,nomeC,(categoria,descricao,preco,emailP,nomeP,avaliacoes)):xs) n = "\nNúmero: " ++ (show n) ++
                                                                                         "\nCategoria: " ++ categoria ++ 
                                                                                         "\nDescrição: " ++ descricao ++
@@ -226,25 +224,23 @@ listarAtAceitosAux ((emailC,nomeC,(categoria,descricao,preco,emailP,nomeP,avalia
                                                                                         "\n" ++ listarAtAceitosAux xs (n+1)
 
 
-
-
--- Retor a media da avaliação de um servico
+-- Retorna a media da avaliacao de um servico
 mediaAvaliacaoServico:: Servico -> Float
 mediaAvaliacaoServico (_,_,_,_,_,[]) = 0.0
 mediaAvaliacaoServico (_,_,_,_,_,avaliacoes) = ((sum avaliacoes) / (realToFrac (length avaliacoes)))
 
 
--- Retorna a media de uma lista de avaliações
+-- Retorna a media de uma lista de avaliacoes
 mediaAvaliacoes:: Avaliacoes -> Avaliacao
 mediaAvaliacoes [] = 0.0
 mediaAvaliacoes avaliacoes = ((sum avaliacoes) / (realToFrac (length avaliacoes)))
 
--- Retorna uma String com um media formatada
+-- Retorna uma String com uma media formatada
 formataMediaAvaliacao:: Float -> String
 formataMediaAvaliacao media = if (media == 10) then show media
                               else take 3 (show media)
 
--- Retorna todos os serviços de uma categoria
+-- Retorna todos os servicos de uma categoria
 getServicosCategoria:: Servicos -> Categoria -> Servicos
 getServicosCategoria servicos categoria = [x | x <- servicos, (map toLower (getCategoria x)) == (map toLower categoria)]
 
@@ -260,7 +256,6 @@ getEmailCAtNConcluido:: (EmailC,NomeC,Servico) -> EmailC
 getEmailCAtNConcluido (emailC,_,_) = emailC
 
 
-
 -- Retorna um AtConcluidos de um cliente
 getAtConcluidos:: AtConcluidos -> EmailC -> AtConcluidos
 getAtConcluidos [] _ = []
@@ -271,7 +266,7 @@ getAtConcluidos atendimentos@(x:xs) emailC = [x | x <- atendimentos, (getEmailCA
 getEmailCAtConcluido:: (EmailC,NomeC,Servico,Avaliacao) -> EmailC
 getEmailCAtConcluido (emailC,_,_,_) = emailC
 
--- Rotorna uma String com a representação dos atendimentos conluidos recebidos
+-- Retorna uma String com a representacao dos atendimentos conluidos recebidos
 listarAtConcluidos:: AtConcluidos -> String
 listarAtConcluidos atPendentes = listarAtConcluidosAux atPendentes 1
 
@@ -284,6 +279,7 @@ listarAtConcluidosAux ((emailC,nomeC,(categoria,descricao,preco,emailP,nomeP,_),
                                                                                                             "\nProfissional: " ++ nomeP ++ 
                                                                                                             "\nEmail: " ++ emailP ++
                                                                                                             "\nAvaliação Atendimento: " ++ (show avaliacao) ++ " ⭐"
+
 listarAtConcluidosAux ((emailC,nomeC,(categoria,descricao,preco,emailP,nomeP,_),avaliacao):xs) n = "\nNúmero: " ++ (show n) ++
                                                                                                             "\nCategoria: " ++ categoria ++ 
                                                                                                             "\nDescrição: " ++ descricao ++
@@ -299,7 +295,7 @@ getAtConcluidosProfissional:: AtConcluidos -> EmailP -> AtConcluidos
 getAtConcluidosProfissional [] _ = []
 getAtConcluidosProfissional atendimentos@(x:xs) emailP = [x | x <- atendimentos, (getEmailPAtConcluido x) == emailP]
 
--- Retorna o emial do profissional de um atendimento concluido
+-- Retorna o email do profissional de um atendimento concluido
 getEmailPAtConcluido:: (EmailC,NomeC,Servico,Avaliacao) -> EmailC
 getEmailPAtConcluido (_,_,(_,_,_,emailP,_,_),_) = emailP
 
@@ -317,7 +313,6 @@ getFaturamentoProfissionalAux (servico@(categoria,descricao,preco,emailP,nomeP,_
                                                                                                      "\nFaturamento: R$ " ++ (show (0.0 * preco))
 
 
-
 getFaturamentoProfissionalAux (servico@(categoria,descricao,preco,emailP,nomeP,_):xs) [] n = "\nNúmero: " ++ (show n) ++
                                                                                                       "\nCategoria: " ++ categoria ++
                                                                                                     "\nDescricao: " ++ descricao ++
@@ -331,8 +326,6 @@ getFaturamentoProfissionalAux (servico@(categoria,descricao,preco,emailP,nomeP,_
                                                                                                      "\nPreço: R$ " ++ (show preco) ++
                                                                                                      "\nFaturamento: R$ " ++ (show ((realToFrac (qtdConclusoesServico servico atConcluidos)) * preco))
 
-
-
 getFaturamentoProfissionalAux (servico@(categoria,descricao,preco,emailP,nomeP,_):xs) atConcluidos n = "\nNúmero: " ++ (show n) ++
                                                                                                       "\nCategoria: " ++ categoria ++
                                                                                                     "\nDescricao: " ++ descricao ++
@@ -341,7 +334,7 @@ getFaturamentoProfissionalAux (servico@(categoria,descricao,preco,emailP,nomeP,_
                                                                                                     "\n" ++ getFaturamentoProfissionalAux xs atConcluidos (n+1)
 
 
--- Retorna a quandidade de vezes que um serviço foi concluido
+-- Retorna a quandidade de vezes que um servico foi concluido
 qtdConclusoesServico:: Servico -> AtConcluidos -> Int
 qtdConclusoesServico servico atConcluidos = length [x | x <- atConcluidos, comparaServico servico (getServicoAtConcluido x)]
 
@@ -357,6 +350,3 @@ comparaServico (categoria1,descricao1,preco1,emailP1,nomeP1,_) (categoria2,descr
 -- Retorna um servico de um atendimento concluido
 getServicoAtConcluido:: AtConcluido -> Servico
 getServicoAtConcluido (_,_,s,_) = s
-
-
-
