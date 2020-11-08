@@ -583,7 +583,7 @@ listarServicosCliente dados@(_,_,_,(atPendentes,atAceitos,atRecusados,atConcluid
             limpaTela
             exibeTodosAtRecusados
             pausa1s
-            putStrLn (listarAtRecusados recusados)
+            putStrLn (listarAtAceitos recusados)
             pausa1s
             menuClienteAutenticado dados cliente
 
@@ -601,7 +601,7 @@ listarServicosCliente dados@(_,_,_,(atPendentes,atAceitos,atRecusados,atConcluid
             limpaTela
             exibeTodosAtConcluidos
             pausa1s
-            putStrLn (listarAtConcluidos concluidos)
+            putStrLn (listarAtAceitos concluidos)
             pausa1s
             menuClienteAutenticado dados cliente
     else if (procuraPalavras voltar palavras) then do
