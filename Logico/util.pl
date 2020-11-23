@@ -3,7 +3,6 @@
     pausa1/0,
     pausa2/0,
     pausa5/0,
-    carrega/0,
     lerEntrada/1,
     splitEspaco/2,
     geraCliente/6,
@@ -22,9 +21,7 @@ pausa2 :-
 pausa5 :-
     sleep(5).
 
-carrega:-
-    reconsult('clientes.pl'),
-    reconsult('profissionais.pl').
+
 
 lerEntrada(Entrada):-
     read_line_to_codes(user_input,Entradaascii),
