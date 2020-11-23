@@ -1,1 +1,1 @@
-([],[],[],([],[],[],[]))
+([("d","d","d","d","\EOT\EOT\EOT\EOT\EOT\EOT"),("cliente1@email","123","cliente1","Reua q","123456789")],[("everton@email","123","Everton","Rua x","123456789")],[("Arte","servi\231o 1",10.0,"everton@email","Everton",[])],([],[],[],[]))
