@@ -9,7 +9,10 @@ inicio:-
 
 carrega:-
     [clientes],
-    [profissionais].
+    [profissionais],
+    [categorias],
+    [servicos],
+    [avaliacoes].
 
 menu:-
     nl,
@@ -40,6 +43,12 @@ sair:-
 ajuda:-
     limpaTela,
     exibeAjudaPrincipal,
+    menu.
+
+voltaMenuPrincipal:-
+    pausa1,
+    limpaTela,
+    exibeBemVindoOLX,
     menu.
 
 
@@ -92,19 +101,46 @@ loginCliente:-
 
 
 
-menuClienteAutenticado(Email):-
+menuClienteAutenticado(EmailC):-
     nl,
     writeln('Como posso ajudar?'),nl,
     write("-> "),
     lerEntrada(Entrada),
-    splitEspaco(Entrada,EntradaLista).
+    splitEspaco(Entrada,EntradaLista),
+    opcaoMenuCliente(EntradaLista,EmailC).
+
+opcaoMenuCliente(Palavras,EmailC):-
+    (member("contratar",Palavras),member("servico",Palavras)) -> contratarServico(EmailC);
+    (member("ajuda",Palavras)) -> ajudaCliente(EmailC);
+    (member("sair",Palavras)) -> voltaMenuPrincipal.
 
 
+ajudaCliente(EmailC):-
+    limpaTela,
+    exibeAjudaCliente,
+    menuClienteAutenticado(EmailC).
+
+contratarServico(EmailC):-
+    (getTodosServicos(TodosServicos),
+    length(TodosServicos,QtdServicos),
+    QtdServicos =:= 0) -> naoExistemServicosCadastrados(EmailC);
+    
+    writeln("Gostaria de escolher uma categoria de serviços ou listar todos"),
+    writeln("os serviços disponiveis?").
 
 
+    %getTodosServicos(TodosServicos2),
+    %listarServicos(TodosServicos2,String),
+    %writeln(String).
 
-
-
+naoExistemServicosCadastrados(EmailC):-
+    pausa1,
+    limpaTela,
+    exibeNaoExistemServicos,
+    pausa2,
+    limpaTela,
+    exibeBemVindoMenuCliente,
+    menuClienteAutenticado(EmailC).
 
 cadastrarProfissional:-
     limpaTela,
@@ -152,9 +188,46 @@ loginProfissional:-
                                     exibeBemVindoOLX,
                                     menu.
 
-menuProfissionalAutenticado(Email):-
+
+
+menuProfissionalAutenticado(EmailP):-
     nl,
     writeln('Como posso ajudar?'),nl,
     write("-> "),
     lerEntrada(Entrada),
-    splitEspaco(Entrada,EntradaLista).
+    splitEspaco(Entrada,EntradaLista),
+    opcaoMenuProfissional(EntradaLista,EmailP).
+
+opcaoMenuProfissional(Palavras,EmailP):-
+    (member("cadastrar",Palavras),member("servico",Palavras)) -> cadastrarServico(EmailP);
+    (member("ajuda",Palavras)) -> ajudaProfissional(EmailP);
+    (member("sair",Palavras)) -> voltaMenuPrincipal.
+
+ajudaProfissional(EmailP):-
+    limpaTela,
+    exibeAjudaProfissional,
+    menuProfissionalAutenticado(EmailP).
+
+cadastrarServico(EmailP):-
+    profissional(EmailP,_,NomeP,_,_),
+    write(NomeP),
+    limpaTela,
+    exibeInformeDadosCadastro,
+    nl,
+    write("Descrição: "),
+    lerEntrada(Descricao),nl,
+    splitEspaco(Descricao,DescricaoL),
+    atomic_list_concat(DescricaoL,"," ,DescricaoLA),
+    write("Preço: "),
+    lerEntrada(Preco),nl,
+    string_to_atom(Preco,PrecoA),
+    categorias(Categorias),
+    listaCategorias(Categorias),nl,
+    write("Categoria: "),
+    lerEntrada(Categoria),nl,
+    string_to_atom(Categoria,CategoriaA),
+    geraServico(CategoriaA,DescricaoLA,PrecoA,EmailP,NomeP,NovoServico),
+    append('servicos.pl'),
+    writeln(NovoServico),
+    told,
+    carrega.
