@@ -71,7 +71,14 @@ cadastrarCliente:-
     append('clientes.pl'),
     writeln(NovoCliente),
     told,
-    carrega.
+    carrega,
+    pausa1,
+    limpaTela,
+    exibeClienteLogado,
+    pausa2,
+    limpaTela,
+    exibeBemVindoMenuCliente,
+    menuClienteAutenticado(Email).
 
 
 loginCliente:-
@@ -112,7 +119,11 @@ menuClienteAutenticado(EmailC):-
 opcaoMenuCliente(Palavras,EmailC):-
     (member("contratar",Palavras),member("servico",Palavras)) -> contratarServico(EmailC);
     (member("ajuda",Palavras)) -> ajudaCliente(EmailC);
-    (member("sair",Palavras)) -> voltaMenuPrincipal.
+    (member("sair",Palavras)) -> voltaMenuPrincipal;
+    writeln("\nNão entendi, poderia repetir?"),
+    writeln("Caso precise de ajuda digite Ajuda."),
+    pausa1,
+    menuClienteAutenticado(EmailC).
 
 
 ajudaCliente(EmailC):-
@@ -124,14 +135,14 @@ contratarServico(EmailC):-
     (getTodosServicos(TodosServicos),
     length(TodosServicos,QtdServicos),
     QtdServicos =:= 0) -> naoExistemServicosCadastrados(EmailC);
-    
+    nl,
     writeln("Gostaria de escolher uma categoria de serviços ou listar todos"),
-    writeln("os serviços disponiveis?").
+    writeln("os serviços disponiveis?"),nl,
+    write("-> "),
+    lerEntrada(Entrada),
+    splitEspaco(Entrada,EntradaLista),
+    opcaoContratarServico(EntradaLista,EmailC).
 
-
-    %getTodosServicos(TodosServicos2),
-    %listarServicos(TodosServicos2,String),
-    %writeln(String).
 
 naoExistemServicosCadastrados(EmailC):-
     pausa1,
@@ -141,6 +152,72 @@ naoExistemServicosCadastrados(EmailC):-
     limpaTela,
     exibeBemVindoMenuCliente,
     menuClienteAutenticado(EmailC).
+
+
+opcaoContratarServico(Palavras,EmailC):-
+    (member("listar",Palavras),member("todos",Palavras)) -> contratarServicoListar(EmailC);
+    (member("categoria",Palavras)) -> contratarServicoCategoria(EmailC);
+    (member("voltar",Palavras)) -> voltarMenuCliente(EmailC);
+    writeln("\nNão entendi, poderia repetir?"),
+    writeln("Caso queira sair digite voltar"),
+    pausa1,
+    contratarServico(EmailC).
+
+voltarMenuCliente(EmailC):-
+    pausa1,
+    limpaTela,
+    exibeBemVindoMenuCliente,
+    menuClienteAutenticado(EmailC).
+
+
+contratarServicoListar(EmailC):-
+    getTodosServicos(TodosServicos),
+    listarServicos(TodosServicos,String),
+    writeln(String),nl,
+    writeln("Caso queira contratar algum deles informe o número do serviço correspondente."),
+    writeln("Caso não queira contratar nenhum deles digite 0."),nl,
+    write("-> "),
+    lerEntradaNum(EntradaNum),
+    length(TodosServicos, Tam),
+    EntradaNum >= 0,
+    EntradaNum =< Tam -> contratarServicoListarAux(EmailC,TodosServicos,EntradaNum);
+                                nl,writeln("Opção inválida"),pausa2,contratarServicoListar(EmailC).
+
+
+
+contratarServicoListarAux(EmailC,TodosServicos,Num):-
+    Num =:= 0 -> pausa1,
+                 limpaTela,
+                 exibeBemVindoMenuCliente,
+                 menuClienteAutenticado(EmailC);
+ 
+                 I is Num - 1,
+                 nth0(I,TodosServicos,ServicoL),
+                 getNomeCliente(EmailC,NomeC),
+                 geraAtendimentoPendente(EmailC,NomeC,ServicoL,NovoServico),
+                 append('atPendentes.pl'),
+                 writeln(NovoServico),
+                 told,
+                 carrega,
+                 pausa1,
+                 limpaTela,
+                 exibeSolicitacaoConcluida,
+                 pausa2,
+                 limpaTela,
+                 exibeBemVindoMenuCliente,
+                 menuClienteAutenticado(EmailC).
+
+
+
+contratarServicoCategoria(EmailC):-
+    write("não implementado").
+
+
+    %getTodosServicos(TodosServicos2),
+    %listarServicos(TodosServicos2,String),
+    %writeln(String).
+
+
 
 cadastrarProfissional:-
     limpaTela,
@@ -201,7 +278,11 @@ menuProfissionalAutenticado(EmailP):-
 opcaoMenuProfissional(Palavras,EmailP):-
     (member("cadastrar",Palavras),member("servico",Palavras)) -> cadastrarServico(EmailP);
     (member("ajuda",Palavras)) -> ajudaProfissional(EmailP);
-    (member("sair",Palavras)) -> voltaMenuPrincipal.
+    (member("sair",Palavras)) -> voltaMenuPrincipal;
+    writeln("\nNão entendi, poderia repetir?"),
+    writeln("Caso precise de ajuda digite Ajuda."),
+    pausa1,
+    opcaoMenuProfissional(EmailP).
 
 ajudaProfissional(EmailP):-
     limpaTela,

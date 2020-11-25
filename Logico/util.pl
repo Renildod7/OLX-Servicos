@@ -3,11 +3,14 @@
     pausa1/0,
     pausa2/0,
     pausa5/0,
+    getNomeCliente/2,
     lerEntrada/1,
+    lerEntradaNum/1,
     splitEspaco/2,
     geraCliente/6,
     geraProfissional/6,
     geraServico/6,
+    geraAtendimentoPendente/4,
     listaCategorias/1,
     getTodosServicos/1,
     listarServicos/2
@@ -25,6 +28,9 @@ pausa2 :-
 pausa5 :-
     sleep(5).
 
+getNomeCliente(EmailC,NomeC):-
+    cliente(EmailC,_,NomeC,_,_).
+
 listaCategorias([]).
 listaCategorias([H|T]):- writeln(H), listaCategorias(T).
 
@@ -32,6 +38,11 @@ lerEntrada(Entrada):-
     read_line_to_codes(user_input,Entradaascii),
     string_to_atom(Entradaascii,EntradaString),
     string_lower(EntradaString,Entrada).
+
+lerEntradaNum(EntradaNum):-
+    read_line_to_codes(user_input,Entradaascii),
+    string_to_atom(Entradaascii,EntradaString),
+    atom_number(EntradaString,EntradaNum).
 
 splitEspaco(String,Lista):- 
     split_string(String," ","\s\t\n",Lista).
@@ -119,15 +130,17 @@ listarServicosAux([H|T],String,N,R):-
     QtdAvali =\= 0 -> 
                         MediaAvaliacoes is SomaAvali/QtdAvali,
                         geraStringServico(N,Categoria,Descricao,MediaAvaliacoes,Preco,NomeP,EmailP,StringServico),
-                        string_concat(String,StringServico,NovaString),
-                        N2 is N+1,
-                        listarServicosAux(T,NovaString,N2,R);
+                        listarServicosAux2(T,String,N,R,StringServico);
 
                         getAtributosServico(H,Categoria,Descricao,Preco,EmailP,NomeP),
                         geraStringServico(N,Categoria,Descricao,0.0,Preco,NomeP,EmailP,StringServico),
-                        string_concat(String,StringServico,NovaString),
-                        N2 is N+1,
-                        listarServicosAux(T,NovaString,N2,R).
+                        listarServicosAux2(T,String,N,R,StringServico).
+
+listarServicosAux2(T,String,N,R,StringServico):-
+    string_concat(String,StringServico,NovaString),
+    N2 is N+1,
+    listarServicosAux(T,NovaString,N2,R).
+
 
 getAtributosServico(Lista,Categoria,Descricao,Preco,EmailP,NomeP):-
     nth0(0,Lista,Categoria),
@@ -137,6 +150,25 @@ getAtributosServico(Lista,Categoria,Descricao,Preco,EmailP,NomeP):-
     nth0(4,Lista,NomeP).
 
 geraStringServico(N,Categoria,Descricao,MediaAvaliacoes,Preco,NomeP,EmailP,String):-
+    formataDescricao(Descricao,NovaDescricao),
     format(atom(String),
         '\nNúmero: ~w\nCategoria: ~w\nDescrição: ~w\nAvaliação: ~1f ⭐\nPreço: R$ ~w\nProfissional: ~w\nEmail: ~w\n',
-        [N,Categoria,Descricao,MediaAvaliacoes,Preco,NomeP,EmailP]).
+        [N,Categoria,NovaDescricao,MediaAvaliacoes,Preco,NomeP,EmailP]).
+
+formataDescricao(Descricao,R):-
+    formataDescricaoAux(Descricao,"",R).
+    
+
+formataDescricaoAux([],String,R):- R = String.
+formataDescricaoAux([H|T],String,R):-
+    string_concat(String,H,NovaString),
+    string_concat(NovaString," ",NovaString2),
+    formataDescricaoAux(T,NovaString2,R).
+
+
+
+geraAtendimentoPendente(EmailC,NomeC,Lista,NovoServico):-
+    getAtributosServico(Lista,Categoria,Descricao,Preco,EmailP,NomeP),
+    format(atom(NovoServico),
+        'atPendente(~w,~w,~w,~w,~w,~w,~w).',
+        [EmailC,NomeC,Categoria,Descricao,Preco,EmailP,NomeP]).
