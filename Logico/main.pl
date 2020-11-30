@@ -12,7 +12,8 @@ carrega:-
     [profissionais],
     [categorias],
     [servicos],
-    [avaliacoes].
+    [avaliacoes],
+    [atPendentes].
 
 menu:-
     nl,
@@ -67,6 +68,8 @@ cadastrarCliente:-
     lerEntrada(Endereco),nl,
     write("Telefone: "),
     lerEntrada(Telefone),
+    string_to_atom(Email,EmailA),
+    \+ cliente(EmailA,_,_,_,_) -> 
     geraCliente(Nome,Email,Senha,Endereco,Telefone,NovoCliente),
     append('clientes.pl'),
     writeln(NovoCliente),
@@ -74,11 +77,18 @@ cadastrarCliente:-
     carrega,
     pausa1,
     limpaTela,
-    exibeClienteLogado,
+    exibeCadastroRealizado,
     pausa2,
     limpaTela,
-    exibeBemVindoMenuCliente,
-    menuClienteAutenticado(Email).
+    voltaMenuPrincipal;
+
+    pausa1,
+    limpaTela,
+    exibeClienteJaCadastrado,
+    pausa1,
+    voltaMenuPrincipal.
+
+
 
 
 loginCliente:-
@@ -147,7 +157,7 @@ contratarServico(EmailC):-
 naoExistemServicosCadastrados(EmailC):-
     pausa1,
     limpaTela,
-    exibeNaoExistemServicos,
+    exibeNaoPossuiServico,
     pausa2,
     limpaTela,
     exibeBemVindoMenuCliente,
@@ -210,12 +220,112 @@ contratarServicoListarAux(EmailC,TodosServicos,Num):-
 
 
 contratarServicoCategoria(EmailC):-
-    write("não implementado").
+    nl,
+    writeln("Informe a categoria desejada entre as seguintes:"),nl,
+    getCategorias(Categorias),
+    listaCategorias(Categorias),nl,
+    write("-> "),
+    lerEntrada(Categoria),
+    string_to_atom(Categoria,CategoriaA),
+    categoria(CategoriaA) -> contratarServicoCategoriaAux(EmailC,CategoriaA);
+    nl,writeln("Categoria inválida"), pausa1,contratarServicoCategoria(EmailC).
 
 
-    %getTodosServicos(TodosServicos2),
-    %listarServicos(TodosServicos2,String),
-    %writeln(String).
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Falta ordenar os servicos antes de mostrar os dois mais bem getDoisMelhorAvaliados %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+contratarServicoCategoriaAux(EmailC,Categoria):-
+    getServicosCategoria(Categoria,Servicos),
+    length(Servicos,Tam),
+    Tam > 0,
+
+    getDoisMelhorAvaliados(Servicos,DoisServicos),
+    listarServicos(DoisServicos,String),
+    limpaTela,
+    exibeServicosAvaliadosCategoria,
+    writeln(String),
+    writeln("Gostaria de contratar algum desses serviços, ou gostaria de listar todos"),
+    writeln("desta categoria?"),nl,
+    write("-> "),
+    lerEntrada(Entrada),
+    splitEspaco(Entrada,EntradaLista),
+    opcaoContratarServicoCategoriaAux(EmailC,Categoria,Servicos,DoisServicos,EntradaLista);
+    exibeNaoPossuiServicosAvaliadosCategoria(EmailC).
+
+exibeNaoPossuiServicosAvaliadosCategoria(EmailC):-
+    pausa1,
+    limpaTela,
+    exibeNaoPossuiServicosAvaliadosCategoria,
+    pausa2,
+    limpaTela,
+    exibeBemVindoMenuCliente,
+    menuClienteAutenticado(EmailC).
+
+
+opcaoContratarServicoCategoriaAux(EmailC,Categoria,Servicos,DoisServicos,Palavras):-
+    (member("listar",Palavras),member("todos",Palavras)) -> limpaTela,
+                                                            exibeTodosServicosCategoria,
+                                                            contratarServicoCategoriaListarContratar(EmailC,Categoria,Servicos);
+    (member("contratar",Palavras)) -> limpaTela,
+                                      exibeServicosAvaliadosCategoria,
+                                      contratarServicoCategoriaListarContratar(EmailC,Categoria,DoisServicos);
+
+    (member("voltar",Palavras)) -> voltarMenuCliente(EmailC);
+    writeln("\nNão entendi, poderia repetir?"),
+    writeln("Caso queira sair digite voltar"),
+    pausa1,
+    contratarServicoCategoriaAux(EmailC,Categoria).
+
+
+
+
+
+contratarServicoCategoriaListarContratar(EmailC,Categoria,Servicos):-
+    listarServicos(Servicos,String),
+    writeln(String),nl,
+    writeln("Caso queira contratar algum deles informe o número do serviço correspondente."),
+    writeln("Caso não queira contratar nenhum deles digite 0."),nl,
+    write("-> "),
+    lerEntradaNum(EntradaNum),
+    length(Servicos, Tam),
+    EntradaNum >= 0,
+    EntradaNum =< Tam -> contratarServicoCategoriaListarContratarAux(EmailC,Servicos,EntradaNum);
+                                nl,writeln("Opção inválida"),pausa2,
+                                contratarServicoCategoriaListarContratar(EmailC,Categoria,Servicos).
+
+
+
+contratarServicoCategoriaListarContratarAux(EmailC,Servicos,Num):-
+    Num =:= 0 -> pausa1,
+                 limpaTela,
+                 exibeBemVindoMenuCliente,
+                 menuClienteAutenticado(EmailC);
+ 
+                 I is Num - 1,
+                 nth0(I,Servicos,ServicoL),
+                 getNomeCliente(EmailC,NomeC),
+                 geraAtendimentoPendente(EmailC,NomeC,ServicoL,NovoServico),
+                 append('atPendentes.pl'),
+                 writeln(NovoServico),
+                 told,
+                 carrega,
+                 pausa1,
+                 limpaTela,
+                 exibeSolicitacaoConcluida,
+                 pausa2,
+                 limpaTela,
+                 exibeBemVindoMenuCliente,
+                 menuClienteAutenticado(EmailC).
+
+
 
 
 
@@ -233,11 +343,25 @@ cadastrarProfissional:-
     lerEntrada(Endereco),nl,
     write("Telefone: "),
     lerEntrada(Telefone),
+    string_to_atom(Email,EmailA),
+    \+ profissional(EmailA,_,_,_,_) -> 
     geraProfissional(Nome,Email,Senha,Endereco,Telefone,NovoProfissonal),
     append('profissionais.pl'),
     writeln(NovoProfissonal),
     told,
-    carrega.
+    carrega,
+    pausa1,
+    limpaTela,
+    exibeCadastroRealizado,
+    pausa2,
+    limpaTela,
+    voltaMenuPrincipal;
+
+    pausa1,
+    limpaTela,
+    exibeProfissionalJaCadastrado,
+    pausa1,
+    voltaMenuPrincipal.
 
 
 loginProfissional:-
@@ -277,12 +401,13 @@ menuProfissionalAutenticado(EmailP):-
 
 opcaoMenuProfissional(Palavras,EmailP):-
     (member("cadastrar",Palavras),member("servico",Palavras)) -> cadastrarServico(EmailP);
+    (member("listar",Palavras),member("atendimentos",Palavras),member("pendentes",Palavras)) -> listarAtendimentosPendentes(EmailP);
     (member("ajuda",Palavras)) -> ajudaProfissional(EmailP);
     (member("sair",Palavras)) -> voltaMenuPrincipal;
     writeln("\nNão entendi, poderia repetir?"),
     writeln("Caso precise de ajuda digite Ajuda."),
     pausa1,
-    opcaoMenuProfissional(EmailP).
+    menuProfissionalAutenticado(EmailP).
 
 ajudaProfissional(EmailP):-
     limpaTela,
@@ -291,7 +416,6 @@ ajudaProfissional(EmailP):-
 
 cadastrarServico(EmailP):-
     profissional(EmailP,_,NomeP,_,_),
-    write(NomeP),
     limpaTela,
     exibeInformeDadosCadastro,
     nl,
@@ -300,15 +424,38 @@ cadastrarServico(EmailP):-
     splitEspaco(Descricao,DescricaoL),
     atomic_list_concat(DescricaoL,"," ,DescricaoLA),
     write("Preço: "),
-    lerEntrada(Preco),nl,
-    string_to_atom(Preco,PrecoA),
-    categorias(Categorias),
+    lerEntradaNum(Preco),nl,
+    verificaPreco(Preco) -> cadastrarServicoAux(EmailP,DescricaoLA,Preco,EmailP,NomeP);
+    nl,writeln("Preço invalido"),pausa1,cadastrarServico(EmailP).
+    
+
+cadastrarServicoAux(EmailP,DescricaoLA,Preco,EmailP,NomeP):-
+    writeln("Escolha uma dentre as seguintes categorias"),nl,
+    pausa1,
+    getCategorias(Categorias),
     listaCategorias(Categorias),nl,
     write("Categoria: "),
-    lerEntrada(Categoria),nl,
-    string_to_atom(Categoria,CategoriaA),
-    geraServico(CategoriaA,DescricaoLA,PrecoA,EmailP,NomeP,NovoServico),
+    lerCategoria(Categoria),nl,
+    member(Categoria,Categorias) -> cadastrarServicoAux2(EmailP,Categoria,DescricaoLA,Preco,EmailP,NomeP);
+    writeln("Categoria invalida"),pausa1,cadastrarServico(EmailP).
+
+cadastrarServicoAux2(EmailP,Categoria,Descricao,Preco,EmailP,NomeP):-
+    geraServico(Categoria,Descricao,Preco,EmailP,NomeP,NovoServico),
     append('servicos.pl'),
     writeln(NovoServico),
     told,
-    carrega.
+    carrega,
+    pausa1,
+    limpaTela,
+    exibeCadastroRealizado,
+    pausa2,
+    limpaTela,
+    exibeBemVindoMenuProfissional,
+    menuProfissionalAutenticado(EmailP).
+
+listarAtendimentosPendentes(EmailP):-
+    writeln(EmailP),
+    limpaTela.
+
+
+% contrata serviço por categoria, validações, correções de erros, ajustes no uso dos templates

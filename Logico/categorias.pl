@@ -1,3 +1,9 @@
-:- dynamic categorias/1.
+:- dynamic categoria/1.
 
-categorias(["Arte","Construção","Consultoria","Design","Moda","Saude","Informatica"]).
+categoria(arte).
+categoria(construção).
+categoria(consultoria).
+categoria(design).
+categoria(moda).
+categoria(saude).
+categoria(informatica).

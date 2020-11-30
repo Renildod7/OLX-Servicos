@@ -6,6 +6,7 @@
     getNomeCliente/2,
     lerEntrada/1,
     lerEntradaNum/1,
+    lerCategoria/1,
     splitEspaco/2,
     geraCliente/6,
     geraProfissional/6,
@@ -13,7 +14,12 @@
     geraAtendimentoPendente/4,
     listaCategorias/1,
     getTodosServicos/1,
-    listarServicos/2
+    listarServicos/2,
+    getCategorias/1,
+    verificaPreco/1,
+    getServicosCategoria/2,
+    getDoisMelhorAvaliados/2,
+    getAtPendentesProfissional/2
     ]).
 
 limpaTela:-
@@ -34,6 +40,11 @@ getNomeCliente(EmailC,NomeC):-
 listaCategorias([]).
 listaCategorias([H|T]):- writeln(H), listaCategorias(T).
 
+lerCategoria(Entrada):-
+    read_line_to_codes(user_input,Entradaascii),
+    string_to_atom(Entradaascii,Entrada).
+
+
 lerEntrada(Entrada):-
     read_line_to_codes(user_input,Entradaascii),
     string_to_atom(Entradaascii,EntradaString),
@@ -43,6 +54,8 @@ lerEntradaNum(EntradaNum):-
     read_line_to_codes(user_input,Entradaascii),
     string_to_atom(Entradaascii,EntradaString),
     atom_number(EntradaString,EntradaNum).
+
+verificaPreco(Preco):- integer(Preco);float(Preco).
 
 splitEspaco(String,Lista):- 
     split_string(String," ","\s\t\n",Lista).
@@ -94,7 +107,7 @@ getTodosServicos(R):-getTodosServicosAux([],R),!.
 
 getTodosServicosAux(Lista,R):-
     L = [],
-    servico(Categoria,Descricao,Preco,EmailP,NomeP),
+    main:servico(Categoria,Descricao,Preco,EmailP,NomeP),
     adiciona(NomeP,L,L2),
     adiciona(EmailP,L2,L3),
     adiciona(Preco,L3,L4),
@@ -172,3 +185,83 @@ geraAtendimentoPendente(EmailC,NomeC,Lista,NovoServico):-
     format(atom(NovoServico),
         'atPendente(~w,~w,~w,~w,~w,~w,~w).',
         [EmailC,NomeC,Categoria,Descricao,Preco,EmailP,NomeP]).
+
+
+getCategorias(R):- getCategoriasAux([],R),!.
+
+getCategoriasAux(Lista,R):-
+    main:categoria(Categoria),
+
+    \+ member(Categoria,Lista),
+    adiciona(Categoria,Lista,Lista2),
+    getCategoriasAux(Lista2,R);
+    R = Lista.
+
+
+
+
+
+getServicosCategoria(Categoria,R):- getServicosCategoriaAux(Categoria,[],R),!.
+
+getServicosCategoriaAux(Categoria,Lista,R):-
+    L = [],
+    main:servico(Categoria,Descricao,Preco,EmailP,NomeP),
+    adiciona(NomeP,L,L2),
+    adiciona(EmailP,L2,L3),
+    adiciona(Preco,L3,L4),
+    adiciona(Descricao,L4,L5),
+    adiciona(Categoria,L5,L6),
+
+    \+ member(L6,Lista),
+    adiciona(L6,Lista,Lista2),
+    getServicosCategoriaAux(Categoria,Lista2,R);
+    R = Lista.
+
+
+getDoisMelhorAvaliados(Lista,R):- getDoisMelhorAvaliadosAux(Lista,[],R).
+
+getDoisMelhorAvaliadosAux([H,X|_],L,R):-
+    adiciona(H,L,L2),
+    adiciona(X,L2,L3),
+    R = L3.
+getDoisMelhorAvaliadosAux([H|_],L,R):-
+    adiciona(H,L,L2),
+    R = L2.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+getAtPendentesProfissional(Email,R):- getAtPendentesProfissionalAux(Email,[],R),!.
+
+getAtPendentesProfissionalAux(Email,Lista,R):-
+    L = [],
+    main:atPendente(EmailC,NomeC,Categoria,Descricao,Preco,Email,_),
+    adiciona(Preco,L,L2),
+    adiciona(Descricao,L2,L3),
+    adiciona(Categoria,L3,L4),
+    adiciona(NomeC,L4,L5),
+    adiciona(EmailC,L5,L6),
+
+    \+ member(L6,Lista),
+    adiciona(L6,Lista,Lista2),
+    getAtPendentesProfissionalAux(Email,Lista2,R);
+    R = Lista.
+
+
+
+
+
+
+% ?- retract(cliente(emial2,senha2,nome2,endereço2,telefone2)).
