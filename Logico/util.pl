@@ -19,7 +19,13 @@
     verificaPreco/1,
     getServicosCategoria/2,
     getDoisMelhorAvaliados/2,
-    getAtPendentesProfissional/2
+    getAtPendentesProfissional/2,
+    listarAtPendentesProfissional/2,
+    geraRetractAtPendente/2,
+    geraAtAceito/2,
+    geraAtRecusado/2,
+    getAtAceitosCliente/2,
+    listarAtAceitosCliente/2
     ]).
 
 limpaTela:-
@@ -179,12 +185,17 @@ formataDescricaoAux([H|T],String,R):-
     formataDescricaoAux(T,NovaString2,R).
 
 
+geraAtendimentoPendente(EmailC,NomeC,Lista,NovoServico):- geraAtendimentoPendenteAux(EmailC,NomeC,Lista,1,NovoServico).
 
-geraAtendimentoPendente(EmailC,NomeC,Lista,NovoServico):-
+geraAtendimentoPendenteAux(EmailC,NomeC,Lista,N,NovoServico):-
     getAtributosServico(Lista,Categoria,Descricao,Preco,EmailP,NomeP),
-    format(atom(NovoServico),
-        'atPendente(~w,~w,~w,~w,~w,~w,~w).',
-        [EmailC,NomeC,Categoria,Descricao,Preco,EmailP,NomeP]).
+    format(atom(Servico),
+        'atPendente(~w,~w,~w,~w,~w,~w,~w,~w).',
+        [EmailC,NomeC,Categoria,Descricao,Preco,EmailP,NomeP,N]),
+    \+ main:atPendente(EmailC,NomeC,Categoria,Descricao,Preco,EmailP,NomeP,N),
+    NovoServico = Servico;
+    N2 is N +1,
+    geraAtendimentoPendenteAux(EmailC,NomeC,Lista,N2,NovoServico).
 
 
 getCategorias(R):- getCategoriasAux([],R),!.
@@ -230,32 +241,22 @@ getDoisMelhorAvaliadosAux([H|_],L,R):-
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 getAtPendentesProfissional(Email,R):- getAtPendentesProfissionalAux(Email,[],R),!.
 
 getAtPendentesProfissionalAux(Email,Lista,R):-
     L = [],
-    main:atPendente(EmailC,NomeC,Categoria,Descricao,Preco,Email,_),
-    adiciona(Preco,L,L2),
-    adiciona(Descricao,L2,L3),
-    adiciona(Categoria,L3,L4),
-    adiciona(NomeC,L4,L5),
-    adiciona(EmailC,L5,L6),
+    main:atPendente(EmailC,NomeC,Categoria,Descricao,Preco,Email,Nome,N),
+    adiciona(N,L,L2),
+    adiciona(Nome,L2,L3),
+    adiciona(Email,L3,L4),
+    adiciona(Preco,L4,L5),
+    adiciona(Descricao,L5,L6),
+    adiciona(Categoria,L6,L7),
+    adiciona(NomeC,L7,L8),
+    adiciona(EmailC,L8,L9),
 
-    \+ member(L6,Lista),
-    adiciona(L6,Lista,Lista2),
+    \+ member(L9,Lista),
+    adiciona(L9,Lista,Lista2),
     getAtPendentesProfissionalAux(Email,Lista2,R);
     R = Lista.
 
@@ -263,5 +264,149 @@ getAtPendentesProfissionalAux(Email,Lista,R):-
 
 
 
+listarAtPendentesProfissional(Lista,R):- listarAtPendentesProfissionalAux(Lista,"",1,R).
 
-% ?- retract(cliente(emial2,senha2,nome2,endereço2,telefone2)).
+listarAtPendentesProfissionalAux([],String,_,R):- R = String,!.
+listarAtPendentesProfissionalAux([H|T],String,N,R):-
+    getAtributosAtPendente(H,EmailC,NomeC,Categoria,Descricao,Preco,EmailP,NomeP,_),
+    getAvaliacoes(Categoria,Descricao,Preco,EmailP,NomeP,AvaliacoesL),
+    somaAvaliacoes(AvaliacoesL,SomaAvali),
+    length(AvaliacoesL,QtdAvali),
+    QtdAvali =\= 0 -> 
+                        MediaAvaliacoes is SomaAvali/QtdAvali,
+                        geraStringAtPendente(N,EmailC,NomeC,Categoria,Descricao,MediaAvaliacoes,Preco,StringAtPendente),
+                        listarAtPendentesProfissionalAux2(T,String,N,R,StringAtPendente);
+
+                        getAtributosAtPendente(H,EmailC,NomeC,Categoria,Descricao,Preco,_,_,_),
+                        geraStringAtPendente(N,EmailC,NomeC,Categoria,Descricao,0.0,Preco,StringAtPendente),
+                        listarAtPendentesProfissionalAux2(T,String,N,R,StringAtPendente).
+
+listarAtPendentesProfissionalAux2(T,String,N,R,StringAtPendente):-
+    string_concat(String,StringAtPendente,NovaString),
+    N2 is N+1,
+    listarAtPendentesProfissionalAux(T,NovaString,N2,R).
+
+
+
+
+getAtributosAtPendente(Lista,EmailC,NomeC,Categoria,Descricao,Preco,EmailP,NomeP,Numero):-
+    nth0(0,Lista,EmailC),
+    nth0(1,Lista,NomeC),
+    nth0(2,Lista,Categoria),
+    nth0(3,Lista,Descricao),
+    nth0(4,Lista,Preco),
+    nth0(5,Lista,EmailP),
+    nth0(6,Lista,NomeP),
+    nth0(7,Lista,Numero).
+
+
+geraStringAtPendente(N,EmailC,NomeC,Categoria,Descricao,MediaAvaliacoes,Preco,String):-
+    formataDescricao(Descricao,NovaDescricao),
+    format(atom(String),
+        '\nNúmero: ~w\nCategoria: ~w\nDescrição: ~w\nAvaliação: ~1f ⭐\nPreço: R$ ~w\nCliente: ~w\nEmail: ~w\n',
+        [N,Categoria,NovaDescricao,MediaAvaliacoes,Preco,NomeC,EmailC]).
+
+
+
+geraRetractAtPendente(AtPend,RetractAtPend):-
+    getAtributosAtPendente(AtPend,EmailC,NomeC,Categoria,Descricao,Preco,EmailP,NomeP,Numero),
+    format(atom(RetractAtPend),
+        '?- retract(atPendente(~w,~w,~w,~w,~w,~w,~w,~w)).',
+        [EmailC,NomeC,Categoria,Descricao,Preco,EmailP,NomeP,Numero]).
+
+
+
+
+geraAtAceito(AtPend,AtAceito):- geraAtAceitoAux(AtPend,1,AtAceito).
+
+geraAtAceitoAux(AtPend,N,AtAceito):-
+    getAtributosAtPendente(AtPend,EmailC,NomeC,Categoria,Descricao,Preco,EmailP,NomeP,_),
+    format(atom(AtA),
+        'atAceito(~w,~w,~w,~w,~w,~w,~w,~w).',
+        [EmailC,NomeC,Categoria,Descricao,Preco,EmailP,NomeP,N]),
+    \+ main:atAceito(EmailC,NomeC,Categoria,Descricao,Preco,EmailP,NomeP,N),
+    AtAceito = AtA;
+    N2 is N +1,
+    geraAtAceitoAux(AtPend,N2,AtAceito).
+
+
+
+geraAtRecusado(AtPend,AtRecusado):- geraAtRecusadoAux(AtPend,1,AtRecusado).
+
+geraAtRecusadoAux(AtPend,N,AtRecusado):-
+    getAtributosAtPendente(AtPend,EmailC,NomeC,Categoria,Descricao,Preco,EmailP,NomeP,_),
+    format(atom(AtR),
+        'atRecusado(~w,~w,~w,~w,~w,~w,~w,~w).',
+        [EmailC,NomeC,Categoria,Descricao,Preco,EmailP,NomeP,N]),
+    \+ main:atRecusado(EmailC,NomeC,Categoria,Descricao,Preco,EmailP,NomeP,N),
+    AtRecusado = AtR;
+    N2 is N +1,
+    geraAtRecusadoAux(AtPend,N2,AtRecusado).
+
+
+
+
+
+getAtAceitosCliente(EmailC,R):- getAtAceitosClienteAux(EmailC,[],R),!.
+
+getAtAceitosClienteAux(EmailC,Lista,R):-
+    L = [],
+    main:atAceito(EmailC,NomeC,Categoria,Descricao,Preco,Email,Nome,N),
+    adiciona(N,L,L2),
+    adiciona(Nome,L2,L3),
+    adiciona(Email,L3,L4),
+    adiciona(Preco,L4,L5),
+    adiciona(Descricao,L5,L6),
+    adiciona(Categoria,L6,L7),
+    adiciona(NomeC,L7,L8),
+    adiciona(EmailC,L8,L9),
+
+    \+ member(L9,Lista),
+    adiciona(L9,Lista,Lista2),
+    getAtAceitosClienteAux(Email,Lista2,R);
+    R = Lista.
+
+
+
+
+listarAtAceitosCliente(Lista,R):- listarAtAceitosClienteAux(Lista,"",1,R).
+
+listarAtAceitosClienteAux([],String,_,R):- R = String,!.
+listarAtAceitosClienteAux([H|T],String,N,R):-
+    getAtributosAtAceito(H,_,_,Categoria,Descricao,Preco,EmailP,NomeP,_),
+    getAvaliacoes(Categoria,Descricao,Preco,EmailP,NomeP,AvaliacoesL),
+    somaAvaliacoes(AvaliacoesL,SomaAvali),
+    length(AvaliacoesL,QtdAvali),
+    QtdAvali =\= 0 -> 
+                        MediaAvaliacoes is SomaAvali/QtdAvali,
+                        geraStringAtAceito(N,EmailP,NomeP,Categoria,Descricao,MediaAvaliacoes,Preco,StringAtAceito),
+                        listarAtAceitosClienteAux2(T,String,N,R,StringAtAceito);
+
+                        getAtributosAtAceito(H,_,_,Categoria,Descricao,Preco,EmailP,NomeP,_),
+                        geraStringAtAceito(N,EmailP,NomeP,Categoria,Descricao,0.0,Preco,StringAtAceito),
+                        listarAtAceitosClienteAux2(T,String,N,R,StringAtAceito).
+
+listarAtAceitosClienteAux2(T,String,N,R,StringAtAceito):-
+    string_concat(String,StringAtAceito,NovaString),
+    N2 is N+1,
+    listarAtAceitosClienteAux(T,NovaString,N2,R).
+
+
+
+
+geraStringAtAceito(N,EmailP,NomeP,Categoria,Descricao,MediaAvaliacoes,Preco,String):-
+    formataDescricao(Descricao,NovaDescricao),
+    format(atom(String),
+        '\nNúmero: ~w\nCategoria: ~w\nDescrição: ~w\nAvaliação: ~1f ⭐\nPreço: R$ ~w\nProfissional: ~w\nEmail: ~w\n',
+        [N,Categoria,NovaDescricao,MediaAvaliacoes,Preco,NomeP,EmailP]).
+
+
+getAtributosAtAceito(Lista,EmailC,NomeC,Categoria,Descricao,Preco,EmailP,NomeP,Numero):-
+    nth0(0,Lista,EmailC),
+    nth0(1,Lista,NomeC),
+    nth0(2,Lista,Categoria),
+    nth0(3,Lista,Descricao),
+    nth0(4,Lista,Preco),
+    nth0(5,Lista,EmailP),
+    nth0(6,Lista,NomeP),
+    nth0(7,Lista,Numero).

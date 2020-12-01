@@ -13,7 +13,9 @@ carrega:-
     [categorias],
     [servicos],
     [avaliacoes],
-    [atPendentes].
+    [atPendentes],
+    [atAceitos],
+    [atRecusados].
 
 menu:-
     nl,
@@ -24,12 +26,12 @@ menu:-
     opcaoMenuPrincpal(EntradaLista).
 
 opcaoMenuPrincpal(Palavras):-
-    (member("cadastrar",Palavras),member("cliente",Palavras)) -> cadastrarCliente;
-    (member("login",Palavras),member("cliente",Palavras)) -> loginCliente;
-    (member("cadastrar",Palavras),member("profissional",Palavras)) -> cadastrarProfissional;
-    (member("login",Palavras),member("profissional",Palavras)) -> loginProfissional;
-    (member("sair",Palavras)) -> sair;
-    (member("ajuda",Palavras)) -> ajuda;
+    (member("cadastrar",Palavras),member("cliente",Palavras)) -> cadastrarCliente,!;
+    (member("login",Palavras),member("cliente",Palavras)) -> loginCliente,!;
+    (member("cadastrar",Palavras),member("profissional",Palavras)) -> cadastrarProfissional,!;
+    (member("login",Palavras),member("profissional",Palavras)) -> loginProfissional,!;
+    (member("sair",Palavras)) -> sair,!;
+    (member("ajuda",Palavras)) -> ajuda,!;
     writeln("\nNão entendi, poderia repetir?"),
     writeln("Caso precise de ajuda digite Ajuda."),
     pausa1,
@@ -80,7 +82,7 @@ cadastrarCliente:-
     exibeCadastroRealizado,
     pausa2,
     limpaTela,
-    voltaMenuPrincipal;
+    voltaMenuPrincipal,!;
 
     pausa1,
     limpaTela,
@@ -106,7 +108,7 @@ loginCliente:-
                                     pausa2,
                                     limpaTela,
                                     exibeBemVindoMenuCliente,
-                                    menuClienteAutenticado(EmailA);
+                                    menuClienteAutenticado(EmailA),!;
 
                                     pausa1,
                                     limpaTela,
@@ -127,9 +129,10 @@ menuClienteAutenticado(EmailC):-
     opcaoMenuCliente(EntradaLista,EmailC).
 
 opcaoMenuCliente(Palavras,EmailC):-
-    (member("contratar",Palavras),member("servico",Palavras)) -> contratarServico(EmailC);
-    (member("ajuda",Palavras)) -> ajudaCliente(EmailC);
-    (member("sair",Palavras)) -> voltaMenuPrincipal;
+    (member("contratar",Palavras),member("servico",Palavras)) -> contratarServico(EmailC),!;
+    (member("concluir",Palavras),member("atendimento",Palavras)) -> concluirAtendimento(EmailC),!;
+    (member("ajuda",Palavras)) -> ajudaCliente(EmailC),!;
+    (member("sair",Palavras)) -> voltaMenuPrincipal,!;
     writeln("\nNão entendi, poderia repetir?"),
     writeln("Caso precise de ajuda digite Ajuda."),
     pausa1,
@@ -144,7 +147,7 @@ ajudaCliente(EmailC):-
 contratarServico(EmailC):-
     (getTodosServicos(TodosServicos),
     length(TodosServicos,QtdServicos),
-    QtdServicos =:= 0) -> naoExistemServicosCadastrados(EmailC);
+    QtdServicos =:= 0) -> naoExistemServicosCadastrados(EmailC),!;
     nl,
     writeln("Gostaria de escolher uma categoria de serviços ou listar todos"),
     writeln("os serviços disponiveis?"),nl,
@@ -165,9 +168,9 @@ naoExistemServicosCadastrados(EmailC):-
 
 
 opcaoContratarServico(Palavras,EmailC):-
-    (member("listar",Palavras),member("todos",Palavras)) -> contratarServicoListar(EmailC);
-    (member("categoria",Palavras)) -> contratarServicoCategoria(EmailC);
-    (member("voltar",Palavras)) -> voltarMenuCliente(EmailC);
+    (member("listar",Palavras),member("todos",Palavras)) -> contratarServicoListar(EmailC),!;
+    (member("categoria",Palavras)) -> contratarServicoCategoria(EmailC),!;
+    (member("voltar",Palavras)) -> voltarMenuCliente(EmailC),!;
     writeln("\nNão entendi, poderia repetir?"),
     writeln("Caso queira sair digite voltar"),
     pausa1,
@@ -183,6 +186,10 @@ voltarMenuCliente(EmailC):-
 contratarServicoListar(EmailC):-
     getTodosServicos(TodosServicos),
     listarServicos(TodosServicos,String),
+    pausa1,
+    limpaTela,
+    exibeTodosServicosDisponiveis,
+    pausa1,
     writeln(String),nl,
     writeln("Caso queira contratar algum deles informe o número do serviço correspondente."),
     writeln("Caso não queira contratar nenhum deles digite 0."),nl,
@@ -190,16 +197,16 @@ contratarServicoListar(EmailC):-
     lerEntradaNum(EntradaNum),
     length(TodosServicos, Tam),
     EntradaNum >= 0,
-    EntradaNum =< Tam -> contratarServicoListarAux(EmailC,TodosServicos,EntradaNum);
+    EntradaNum =< Tam -> contratarServicoAux(EmailC,TodosServicos,EntradaNum),!;
                                 nl,writeln("Opção inválida"),pausa2,contratarServicoListar(EmailC).
 
 
 
-contratarServicoListarAux(EmailC,TodosServicos,Num):-
+contratarServicoAux(EmailC,TodosServicos,Num):-
     Num =:= 0 -> pausa1,
                  limpaTela,
                  exibeBemVindoMenuCliente,
-                 menuClienteAutenticado(EmailC);
+                 menuClienteAutenticado(EmailC),!;
  
                  I is Num - 1,
                  nth0(I,TodosServicos,ServicoL),
@@ -223,11 +230,12 @@ contratarServicoCategoria(EmailC):-
     nl,
     writeln("Informe a categoria desejada entre as seguintes:"),nl,
     getCategorias(Categorias),
+    pausa1,
     listaCategorias(Categorias),nl,
     write("-> "),
     lerEntrada(Categoria),
     string_to_atom(Categoria,CategoriaA),
-    categoria(CategoriaA) -> contratarServicoCategoriaAux(EmailC,CategoriaA);
+    categoria(CategoriaA) -> contratarServicoCategoriaAux(EmailC,CategoriaA),!;
     nl,writeln("Categoria inválida"), pausa1,contratarServicoCategoria(EmailC).
 
 
@@ -249,15 +257,17 @@ contratarServicoCategoriaAux(EmailC,Categoria):-
 
     getDoisMelhorAvaliados(Servicos,DoisServicos),
     listarServicos(DoisServicos,String),
+    pausa1,
     limpaTela,
     exibeServicosAvaliadosCategoria,
+    pausa1,
     writeln(String),
     writeln("Gostaria de contratar algum desses serviços, ou gostaria de listar todos"),
     writeln("desta categoria?"),nl,
     write("-> "),
     lerEntrada(Entrada),
-    splitEspaco(Entrada,EntradaLista),
-    opcaoContratarServicoCategoriaAux(EmailC,Categoria,Servicos,DoisServicos,EntradaLista);
+    splitEspaco(Entrada,EntradaLista) ->
+    opcaoContratarServicoCategoriaAux(EmailC,Categoria,Servicos,DoisServicos,EntradaLista),!;
     exibeNaoPossuiServicosAvaliadosCategoria(EmailC).
 
 exibeNaoPossuiServicosAvaliadosCategoria(EmailC):-
@@ -271,14 +281,15 @@ exibeNaoPossuiServicosAvaliadosCategoria(EmailC):-
 
 
 opcaoContratarServicoCategoriaAux(EmailC,Categoria,Servicos,DoisServicos,Palavras):-
-    (member("listar",Palavras),member("todos",Palavras)) -> limpaTela,
-                                                            exibeTodosServicosCategoria,
-                                                            contratarServicoCategoriaListarContratar(EmailC,Categoria,Servicos);
+    (member("listar",Palavras),member("todos",Palavras)) ->     pausa1,
+                                                                limpaTela,
+                                                                exibeTodosServicosCategoria,
+                                                            contratarServicoCategoriaListarContratar(EmailC,Categoria,Servicos),!;
     (member("contratar",Palavras)) -> limpaTela,
                                       exibeServicosAvaliadosCategoria,
-                                      contratarServicoCategoriaListarContratar(EmailC,Categoria,DoisServicos);
+                                      contratarServicoCategoriaListarContratar(EmailC,Categoria,DoisServicos),!;
 
-    (member("voltar",Palavras)) -> voltarMenuCliente(EmailC);
+    (member("voltar",Palavras)) -> voltarMenuCliente(EmailC),!;
     writeln("\nNão entendi, poderia repetir?"),
     writeln("Caso queira sair digite voltar"),
     pausa1,
@@ -290,6 +301,7 @@ opcaoContratarServicoCategoriaAux(EmailC,Categoria,Servicos,DoisServicos,Palavra
 
 contratarServicoCategoriaListarContratar(EmailC,Categoria,Servicos):-
     listarServicos(Servicos,String),
+    pausa1,
     writeln(String),nl,
     writeln("Caso queira contratar algum deles informe o número do serviço correspondente."),
     writeln("Caso não queira contratar nenhum deles digite 0."),nl,
@@ -297,7 +309,7 @@ contratarServicoCategoriaListarContratar(EmailC,Categoria,Servicos):-
     lerEntradaNum(EntradaNum),
     length(Servicos, Tam),
     EntradaNum >= 0,
-    EntradaNum =< Tam -> contratarServicoCategoriaListarContratarAux(EmailC,Servicos,EntradaNum);
+    EntradaNum =< Tam -> contratarServicoAux(EmailC,Servicos,EntradaNum),!;
                                 nl,writeln("Opção inválida"),pausa2,
                                 contratarServicoCategoriaListarContratar(EmailC,Categoria,Servicos).
 
@@ -307,7 +319,7 @@ contratarServicoCategoriaListarContratarAux(EmailC,Servicos,Num):-
     Num =:= 0 -> pausa1,
                  limpaTela,
                  exibeBemVindoMenuCliente,
-                 menuClienteAutenticado(EmailC);
+                 menuClienteAutenticado(EmailC),!;
  
                  I is Num - 1,
                  nth0(I,Servicos,ServicoL),
@@ -324,6 +336,57 @@ contratarServicoCategoriaListarContratarAux(EmailC,Servicos,Num):-
                  limpaTela,
                  exibeBemVindoMenuCliente,
                  menuClienteAutenticado(EmailC).
+
+
+
+concluirAtendimento(EmailC):-
+    getAtAceitosCliente(EmailC,AtAceitos),
+    length(AtAceitos,Tam),
+    Tam > 0 -> limpaTela,
+               exibeTodosAtPendentesP,
+               pausa1,
+               listarAtAceitosCliente(AtAceitos,StringAtAceitos),
+               writeln(StringAtAceitos),!;
+              % listarAtendimentosPendentesAux(EmailP,AtPendentes),!;
+
+               pausa1,nl,
+               writeln("Não existem atendimentos pendentes"),
+               pausa1,
+               menuClienteAutenticado(EmailC).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -355,7 +418,7 @@ cadastrarProfissional:-
     exibeCadastroRealizado,
     pausa2,
     limpaTela,
-    voltaMenuPrincipal;
+    voltaMenuPrincipal,!;
 
     pausa1,
     limpaTela,
@@ -379,7 +442,7 @@ loginProfissional:-
                                     pausa2,
                                     limpaTela,
                                     exibeBemVindoMenuProfissional,
-                                    menuProfissionalAutenticado(EmailA);
+                                    menuProfissionalAutenticado(EmailA),!;
 
                                     pausa1,
                                     limpaTela,
@@ -400,10 +463,10 @@ menuProfissionalAutenticado(EmailP):-
     opcaoMenuProfissional(EntradaLista,EmailP).
 
 opcaoMenuProfissional(Palavras,EmailP):-
-    (member("cadastrar",Palavras),member("servico",Palavras)) -> cadastrarServico(EmailP);
-    (member("listar",Palavras),member("atendimentos",Palavras),member("pendentes",Palavras)) -> listarAtendimentosPendentes(EmailP);
-    (member("ajuda",Palavras)) -> ajudaProfissional(EmailP);
-    (member("sair",Palavras)) -> voltaMenuPrincipal;
+    (member("cadastrar",Palavras),member("servico",Palavras)) -> cadastrarServico(EmailP),!;
+    (member("listar",Palavras),member("atendimentos",Palavras),member("pendentes",Palavras)) -> listarAtendimentosPendentes(EmailP),!;
+    (member("ajuda",Palavras)) -> ajudaProfissional(EmailP),!;
+    (member("sair",Palavras)) -> voltaMenuPrincipal,!;
     writeln("\nNão entendi, poderia repetir?"),
     writeln("Caso precise de ajuda digite Ajuda."),
     pausa1,
@@ -425,7 +488,7 @@ cadastrarServico(EmailP):-
     atomic_list_concat(DescricaoL,"," ,DescricaoLA),
     write("Preço: "),
     lerEntradaNum(Preco),nl,
-    verificaPreco(Preco) -> cadastrarServicoAux(EmailP,DescricaoLA,Preco,EmailP,NomeP);
+    verificaPreco(Preco) -> cadastrarServicoAux(EmailP,DescricaoLA,Preco,EmailP,NomeP),!;
     nl,writeln("Preço invalido"),pausa1,cadastrarServico(EmailP).
     
 
@@ -436,7 +499,7 @@ cadastrarServicoAux(EmailP,DescricaoLA,Preco,EmailP,NomeP):-
     listaCategorias(Categorias),nl,
     write("Categoria: "),
     lerCategoria(Categoria),nl,
-    member(Categoria,Categorias) -> cadastrarServicoAux2(EmailP,Categoria,DescricaoLA,Preco,EmailP,NomeP);
+    member(Categoria,Categorias) -> cadastrarServicoAux2(EmailP,Categoria,DescricaoLA,Preco,EmailP,NomeP),!;
     writeln("Categoria invalida"),pausa1,cadastrarServico(EmailP).
 
 cadastrarServicoAux2(EmailP,Categoria,Descricao,Preco,EmailP,NomeP):-
@@ -454,8 +517,131 @@ cadastrarServicoAux2(EmailP,Categoria,Descricao,Preco,EmailP,NomeP):-
     menuProfissionalAutenticado(EmailP).
 
 listarAtendimentosPendentes(EmailP):-
-    writeln(EmailP),
-    limpaTela.
+    getAtPendentesProfissional(EmailP,AtPendentes),
+    length(AtPendentes,Tam),
+    Tam > 0 -> limpaTela,
+               exibeTodosAtPendentesP,
+               pausa1,
+               listarAtPendentesProfissional(AtPendentes,StringAtPendentes),
+               writeln(StringAtPendentes),
+               listarAtendimentosPendentesAux(EmailP,AtPendentes),!;
+
+               pausa1,nl,
+               writeln("Não existem atendimentos pendentes"),
+               pausa1,
+               menuProfissionalAutenticado(EmailP).
+
+listarAtendimentosPendentesAux(EmailP,AtPendentes):-
+    writeln("Para aceitar ou recusar um atendimento, informe a ação desejada"),nl,
+    write("-> "),
+    lerEntrada(Entrada),
+    splitEspaco(Entrada,EntradaLista),
+    opcaoListarAtendimentosPendentesAux(EmailP,AtPendentes,EntradaLista).
+
+voltarMenuProfissional(EmailP):-
+    pausa1,
+    limpaTela,
+    exibeBemVindoMenuProfissional,
+    menuProfissionalAutenticado(EmailP).
+
+opcaoListarAtendimentosPendentesAux(EmailP,AtPendentes,Palavras):-
+    (member("aceitar",Palavras)) -> listarAtendimentosPendentesAceitar(EmailP,AtPendentes),!;
+    (member("recusar",Palavras)) -> listarAtendimentosPendentesRecusar(EmailP,AtPendentes),!;
+    (member("voltar",Palavras)) -> voltarMenuProfissional(EmailP),!;
+    writeln("\nNão entendi, poderia repetir?"),
+    writeln("Caso queira voltar digite voltar"),
+    pausa2,
+    listarAtendimentosPendentes(EmailP).
+
+listarAtendimentosPendentesAceitar(EmailP,AtPendentes):-
+    nl,
+    writeln("Indique o número do atendimento que deseja aceitar"),
+    writeln("Caso queira voltar digite 0"),
+    nl,
+    write("-> "),
+    lerEntradaNum(EntradaNum),
+    length(AtPendentes,Tam),
+    EntradaNum =< Tam,
+    EntradaNum >= 0 -> listarAtendimentosPendentesAceitarAux(EmailP,AtPendentes,EntradaNum),!;
+
+                       nl,
+                       writeln("Opção inválida"),
+                       pausa2,
+                       listarAtendimentosPendentes(EmailP).
 
 
-% contrata serviço por categoria, validações, correções de erros, ajustes no uso dos templates
+listarAtendimentosPendentesAceitarAux(EmailP,AtPendentes,Num):-
+    Num =:= 0 -> pausa1,
+                 limpaTela,
+                 exibeBemVindoMenuProfissional,
+                 menuProfissionalAutenticado(EmailP),!;
+ 
+                 I is Num - 1,
+                 nth0(I,AtPendentes,AtPend),
+                 geraRetractAtPendente(AtPend,RetractAtPend),
+                 geraAtAceito(AtPend,AtAceito),
+                 append('atPendentes.pl'),
+                 writeln(RetractAtPend),
+                 told,
+                 append('atAceitos.pl'),
+                 writeln(AtAceito),
+                 told,
+                 carrega,
+                 pausa1,
+                 limpaTela,
+                 exibeAtendimentoAceito,
+                 pausa2,
+                 limpaTela,
+                 exibeBemVindoMenuProfissional,
+                 menuProfissionalAutenticado(EmailP).
+
+
+
+
+
+
+
+
+listarAtendimentosPendentesRecusar(EmailP,AtPendentes):-
+    nl,
+    writeln("Indique o número do atendimento que deseja recusar"),
+    writeln("Caso queira voltar digite 0"),
+    nl,
+    write("-> "),
+    lerEntradaNum(EntradaNum),
+    length(AtPendentes,Tam),
+    EntradaNum =< Tam,
+    EntradaNum >= 0 -> listarAtendimentosPendentesRecusarAux(EmailP,AtPendentes,EntradaNum),!;
+
+                       nl,
+                       writeln("Opção inválida"),
+                       pausa2,
+                       listarAtendimentosPendentes(EmailP).
+
+
+listarAtendimentosPendentesRecusarAux(EmailP,AtPendentes,Num):-
+    Num =:= 0 -> pausa1,
+                 limpaTela,
+                 exibeBemVindoMenuProfissional,
+                 menuProfissionalAutenticado(EmailP),!;
+ 
+                 I is Num - 1,
+                 nth0(I,AtPendentes,AtPend),
+                 geraRetractAtPendente(AtPend,RetractAtPend),
+                 geraAtRecusado(AtPend,AtRecusado),
+                 append('atPendentes.pl'),
+                 writeln(RetractAtPend),
+                 told,
+                 append('atRecusados.pl'),
+                 writeln(AtRecusado),
+                 told,
+                 carrega,
+                 pausa1,
+                 limpaTela,
+                 exibeAtendimentoRecusado,
+                 pausa2,
+                 limpaTela,
+                 exibeBemVindoMenuProfissional,
+                 menuProfissionalAutenticado(EmailP).
+
+
