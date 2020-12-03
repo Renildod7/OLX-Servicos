@@ -1,5 +1,6 @@
 :- dynamic servico/5.
 
-servico(construção,[alguma,coisa],45,emailp,nomep).
-servico(desing,[asd,asd,dsa],2,emailp,nomep).
-servico(saude,[dsa],dsa,emailp,nomep).
+servico(saude,[saude],1,emailp,nomep).
+servico(construção,[construção],2,emailp,nomep).
+servico(informatica,[informatica],5,emailp,nomep).
+servico(moda,[moda],5,emailp,nomep).

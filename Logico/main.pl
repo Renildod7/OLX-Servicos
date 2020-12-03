@@ -1,5 +1,8 @@
 :- use_module('./template.pl').
 :- use_module('./util.pl').
+:- use_module('./palavrasChave.pl').
+
+:- initialization(inicio).
 
 inicio:-
     carrega,
@@ -12,10 +15,10 @@ carrega:-
     [profissionais],
     [categorias],
     [servicos],
-    [avaliacoes],
     [atPendentes],
     [atAceitos],
-    [atRecusados].
+    [atRecusados],
+    [atConcluidos].
 
 menu:-
     nl,
@@ -26,12 +29,12 @@ menu:-
     opcaoMenuPrincpal(EntradaLista).
 
 opcaoMenuPrincpal(Palavras):-
-    (member("cadastrar",Palavras),member("cliente",Palavras)) -> cadastrarCliente,!;
-    (member("login",Palavras),member("cliente",Palavras)) -> loginCliente,!;
-    (member("cadastrar",Palavras),member("profissional",Palavras)) -> cadastrarProfissional,!;
-    (member("login",Palavras),member("profissional",Palavras)) -> loginProfissional,!;
-    (member("sair",Palavras)) -> sair,!;
-    (member("ajuda",Palavras)) -> ajuda,!;
+    (cadastrar(Palavras),cliente(Palavras)) -> cadastrarCliente,!;
+    (login(Palavras),cliente(Palavras)) -> loginCliente,!;
+    (cadastrar(Palavras),profissional(Palavras)) -> cadastrarProfissional,!;
+    (login(Palavras),profissional(Palavras)) -> loginProfissional,!;
+    (sair(Palavras)) -> sair,!;
+    (ajuda(Palavras)) -> ajuda,!;
     writeln("\nNão entendi, poderia repetir?"),
     writeln("Caso precise de ajuda digite Ajuda."),
     pausa1,
@@ -40,8 +43,9 @@ opcaoMenuPrincpal(Palavras):-
 sair:-
     limpaTela,
     msgSair,
-%    pausa5,
-    limpaTela.
+    pausa5,
+    limpaTela,
+    halt.
 
 ajuda:-
     limpaTela,
@@ -90,9 +94,6 @@ cadastrarCliente:-
     pausa1,
     voltaMenuPrincipal.
 
-
-
-
 loginCliente:-
     nl,
     write("E-mail: "),
@@ -129,10 +130,11 @@ menuClienteAutenticado(EmailC):-
     opcaoMenuCliente(EntradaLista,EmailC).
 
 opcaoMenuCliente(Palavras,EmailC):-
-    (member("contratar",Palavras),member("servico",Palavras)) -> contratarServico(EmailC),!;
-    (member("concluir",Palavras),member("atendimento",Palavras)) -> concluirAtendimento(EmailC),!;
-    (member("ajuda",Palavras)) -> ajudaCliente(EmailC),!;
-    (member("sair",Palavras)) -> voltaMenuPrincipal,!;
+    (contratar(Palavras),servico(Palavras)) -> contratarServico(EmailC),!;
+    (concluir(Palavras),atendimento(Palavras)) -> concluirAtendimento(EmailC),!;
+    (listar(Palavras),servico(Palavras),contratados(Palavras)) -> listarServicosContratadosCliente(EmailC),!;
+    (ajuda(Palavras)) -> ajudaCliente(EmailC),!;
+    (sair(Palavras)) -> voltaMenuPrincipal,!;
     writeln("\nNão entendi, poderia repetir?"),
     writeln("Caso precise de ajuda digite Ajuda."),
     pausa1,
@@ -168,9 +170,9 @@ naoExistemServicosCadastrados(EmailC):-
 
 
 opcaoContratarServico(Palavras,EmailC):-
-    (member("listar",Palavras),member("todos",Palavras)) -> contratarServicoListar(EmailC),!;
-    (member("categoria",Palavras)) -> contratarServicoCategoria(EmailC),!;
-    (member("voltar",Palavras)) -> voltarMenuCliente(EmailC),!;
+    (listar(Palavras),todos(Palavras)) -> contratarServicoListar(EmailC),!;
+    (categorias(Palavras)) -> contratarServicoCategoria(EmailC),!;
+    (voltar(Palavras)) -> voltarMenuCliente(EmailC),!;
     writeln("\nNão entendi, poderia repetir?"),
     writeln("Caso queira sair digite voltar"),
     pausa1,
@@ -238,24 +240,12 @@ contratarServicoCategoria(EmailC):-
     categoria(CategoriaA) -> contratarServicoCategoriaAux(EmailC,CategoriaA),!;
     nl,writeln("Categoria inválida"), pausa1,contratarServicoCategoria(EmailC).
 
-
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Falta ordenar os servicos antes de mostrar os dois mais bem getDoisMelhorAvaliados %%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 contratarServicoCategoriaAux(EmailC,Categoria):-
     getServicosCategoria(Categoria,Servicos),
     length(Servicos,Tam),
     Tam > 0,
-
-    getDoisMelhorAvaliados(Servicos,DoisServicos),
+    ordenaServicosAvaliacao(Servicos,ServicosOrd),
+    getDoisMelhorAvaliados(ServicosOrd,DoisServicos),
     listarServicos(DoisServicos,String),
     pausa1,
     limpaTela,
@@ -267,7 +257,7 @@ contratarServicoCategoriaAux(EmailC,Categoria):-
     write("-> "),
     lerEntrada(Entrada),
     splitEspaco(Entrada,EntradaLista) ->
-    opcaoContratarServicoCategoriaAux(EmailC,Categoria,Servicos,DoisServicos,EntradaLista),!;
+    opcaoContratarServicoCategoriaAux(EmailC,Categoria,ServicosOrd,DoisServicos,EntradaLista),!;
     exibeNaoPossuiServicosAvaliadosCategoria(EmailC).
 
 exibeNaoPossuiServicosAvaliadosCategoria(EmailC):-
@@ -281,15 +271,15 @@ exibeNaoPossuiServicosAvaliadosCategoria(EmailC):-
 
 
 opcaoContratarServicoCategoriaAux(EmailC,Categoria,Servicos,DoisServicos,Palavras):-
-    (member("listar",Palavras),member("todos",Palavras)) ->     pausa1,
-                                                                limpaTela,
-                                                                exibeTodosServicosCategoria,
-                                                            contratarServicoCategoriaListarContratar(EmailC,Categoria,Servicos),!;
-    (member("contratar",Palavras)) -> limpaTela,
-                                      exibeServicosAvaliadosCategoria,
-                                      contratarServicoCategoriaListarContratar(EmailC,Categoria,DoisServicos),!;
+    (listar(Palavras),todos(Palavras)) ->   pausa1,
+                                            limpaTela,
+                                            exibeTodosServicosCategoria,
+                                            contratarServicoCategoriaListarContratar(EmailC,Categoria,Servicos),!;
+    (contratar(Palavras)) ->  limpaTela,
+                              exibeServicosAvaliadosCategoria,
+                              contratarServicoCategoriaListarContratar(EmailC,Categoria,DoisServicos),!;
 
-    (member("voltar",Palavras)) -> voltarMenuCliente(EmailC),!;
+    (voltar(Palavras)) -> voltarMenuCliente(EmailC),!;
     writeln("\nNão entendi, poderia repetir?"),
     writeln("Caso queira sair digite voltar"),
     pausa1,
@@ -311,6 +301,8 @@ contratarServicoCategoriaListarContratar(EmailC,Categoria,Servicos):-
     EntradaNum >= 0,
     EntradaNum =< Tam -> contratarServicoAux(EmailC,Servicos,EntradaNum),!;
                                 nl,writeln("Opção inválida"),pausa2,
+                                limpaTela,
+                                exibeTodosServicosCategoria,
                                 contratarServicoCategoriaListarContratar(EmailC,Categoria,Servicos).
 
 
@@ -346,8 +338,9 @@ concluirAtendimento(EmailC):-
                exibeTodosAtPendentesP,
                pausa1,
                listarAtAceitosCliente(AtAceitos,StringAtAceitos),
-               writeln(StringAtAceitos),!;
-              % listarAtendimentosPendentesAux(EmailP,AtPendentes),!;
+               writeln(StringAtAceitos),nl,
+               concluirAtendimentoAux(EmailC,AtAceitos,Tam),!;
+
 
                pausa1,nl,
                writeln("Não existem atendimentos pendentes"),
@@ -355,41 +348,154 @@ concluirAtendimento(EmailC):-
                menuClienteAutenticado(EmailC).
 
 
+concluirAtendimentoAux(EmailC,AtAceitos,Tam):-
+    writeln("Para finalizar um atendimento, indique seu número"),
+    writeln("Caso não queira finalizar nenhum deles digite 0."),nl,
+    write("-> "),
+    lerEntradaNum(EntradaNum),
+    EntradaNum =< Tam -> concluirAtendimentoAux2(EmailC,AtAceitos,EntradaNum),!;
+
+                         nl,
+                         writeln("Opção inválida"),
+                         pausa1,
+                         concluirAtendimento(EmailC).
+
+concluirAtendimentoAux2(EmailC,AtAceitos,EntradaNum):-
+    EntradaNum =:= 0 ->  pausa1,
+                         limpaTela,
+                         exibeBemVindoMenuCliente,
+                         menuClienteAutenticado(EmailC),!;
+         
+                            
+                         concluirAtendimentoAux3(EmailC,AtAceitos,EntradaNum).
+
+
+concluirAtendimentoAux3(EmailC,AtAceitos,EntradaNum):-
+    nl,
+    writeln("Avalie seu atendimento com um número de 0 a 10"),
+    nl,
+    write("-> "),
+    lerEntradaNum(Avaliacao),
+    Avaliacao =< 10,
+    Avaliacao >= 0 ->    I is EntradaNum - 1,
+                         nth0(I,AtAceitos,AtAceit),
+                         geraRetractAtAceito(AtAceit,RetractAtAceito),
+                         geraAtendimentoConcluitdo(AtAceit,Avaliacao,NovoAtConcluido),
+                         append('atAceitos.pl'),
+                         writeln(RetractAtAceito),
+                         told,
+                         append('atConcluidos.pl'),
+                         writeln(NovoAtConcluido),
+                         told,
+                         carrega,
+                         pausa1,
+                         limpaTela,
+                         exibeAtendimentoConcluido,
+                         pausa2,
+                         limpaTela,
+                         exibeBemVindoMenuCliente,
+                         menuClienteAutenticado(EmailC),!;
+
+                         nl,
+                         writeln("Avaliação inválida"),
+                         writeln("Caso não seja um número inteiro, utilize um ponto (.), para separar"),
+                         writeln("a parte interia da parte fracionária. Exemplo: 2.1"),
+                         pausa2,
+                         concluirAtendimentoAux2(EmailC,AtAceitos,EntradaNum).
+
+
+listarServicosContratadosCliente(EmailC):-
+    nl,writeln("Qual tipo de atendimento você gostaria de ver?"),
+    nl,writeln("Pendentes\nAceitos\nRecusados\nConcluidos"),
+    nl,
+    pausa1,
+    write("-> "),
+    lerEntrada(Entrada),
+    splitEspaco(Entrada,EntradaLista),
+    opcaoListarServicosContratadosCliente(EmailC,EntradaLista).
+
+opcaoListarServicosContratadosCliente(EmailC,Palavras):-
+    (pendentes(Palavras)) -> listarServicosContratadosClientePendentes(EmailC),!;
+    (aceitos(Palavras)) -> listarServicosContratadosClienteAceitos(EmailC),!;
+    (recusados(Palavras)) -> listarServicosContratadosClienteRecusados(EmailC),!;
+    (concluidos(Palavras)) -> listarServicosContratadosClienteConcluidos(EmailC),!;
+    (voltar(Palavras)) -> voltarMenuCliente(EmailC),!;
+    nl,writeln("Opção inválida"),
+    writeln("Caso queira voltar digite voltar"),
+    pausa1,
+    listarServicosContratadosCliente(EmailC).
 
 
 
 
+listarServicosContratadosClientePendentes(EmailC):-
+    getServicosContratadosClientePendentes(EmailC,Pendentes),
+    length(Pendentes,Tam),
+    Tam > 0 -> pausa1,
+               limpaTela,
+               exibeTodosAtPendentes,
+               pausa1,
+               listaAtNaoCloncluidoCliente(Pendentes,String),
+               writeln(String),
+               pausa1,
+               listarServicosContratadosCliente(EmailC);
+
+               pausa1,nl,
+               writeln("Você não possui atendimentos pendentes"),
+               pausa1,
+               listarServicosContratadosCliente(EmailC).
+
+listarServicosContratadosClienteAceitos(EmailC):-
+    getServicosContratadosClienteAceitos(EmailC,Aceitos),
+    length(Aceitos,Tam),
+    Tam > 0 -> pausa1,
+               limpaTela,
+               exibeTodosAtAceitos,
+               pausa1,
+               listaAtNaoCloncluidoCliente(Aceitos,String),
+               writeln(String),
+               pausa1,
+               listarServicosContratadosCliente(EmailC);
+
+               pausa1,nl,
+               writeln("Você não possui atendimentos aceitos"),
+               pausa1,
+               listarServicosContratadosCliente(EmailC).
+
+listarServicosContratadosClienteRecusados(EmailC):-
+    getServicosContratadosClienteRecusados(EmailC,Recusados),
+    length(Recusados,Tam),
+    Tam > 0 -> pausa1,
+               limpaTela,
+               exibeTodosAtRecusados,
+               pausa1,
+               listaAtNaoCloncluidoCliente(Recusados,String),
+               writeln(String),
+               pausa1,
+               listarServicosContratadosCliente(EmailC);
+
+               pausa1,nl,
+               writeln("Você não possui atendimentos recusados"),
+               pausa1,
+               listarServicosContratadosCliente(EmailC).
 
 
+listarServicosContratadosClienteConcluidos(EmailC):-
+    getServicosContratadosClienteConcluidos(EmailC,Concluidos),
+    length(Concluidos,Tam),
+    Tam > 0 -> pausa1,
+               limpaTela,
+               exibeTodosAtConcluidos,
+               pausa1,
+               listaAtCloncluidoCliente(Concluidos,String),
+               writeln(String),
+               pausa1,
+               listarServicosContratadosCliente(EmailC);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+               pausa1,nl,
+               writeln("Você não possui atendimentos concluidos"),
+               pausa1,
+               listarServicosContratadosCliente(EmailC).
 
 
 cadastrarProfissional:-
@@ -463,10 +569,11 @@ menuProfissionalAutenticado(EmailP):-
     opcaoMenuProfissional(EntradaLista,EmailP).
 
 opcaoMenuProfissional(Palavras,EmailP):-
-    (member("cadastrar",Palavras),member("servico",Palavras)) -> cadastrarServico(EmailP),!;
-    (member("listar",Palavras),member("atendimentos",Palavras),member("pendentes",Palavras)) -> listarAtendimentosPendentes(EmailP),!;
-    (member("ajuda",Palavras)) -> ajudaProfissional(EmailP),!;
-    (member("sair",Palavras)) -> voltaMenuPrincipal,!;
+    (cadastrar(Palavras),servico(Palavras)) -> cadastrarServico(EmailP),!;
+    (listar(Palavras),atendimentos(Palavras),pendentes(Palavras)) -> listarAtendimentosPendentes(EmailP),!;
+    (faturamento(Palavras)) -> faturamentoServicos(EmailP),!;
+    (ajuda(Palavras)) -> ajudaProfissional(EmailP),!;
+    (sair(Palavras)) -> voltaMenuPrincipal,!;
     writeln("\nNão entendi, poderia repetir?"),
     writeln("Caso precise de ajuda digite Ajuda."),
     pausa1,
@@ -545,9 +652,9 @@ voltarMenuProfissional(EmailP):-
     menuProfissionalAutenticado(EmailP).
 
 opcaoListarAtendimentosPendentesAux(EmailP,AtPendentes,Palavras):-
-    (member("aceitar",Palavras)) -> listarAtendimentosPendentesAceitar(EmailP,AtPendentes),!;
-    (member("recusar",Palavras)) -> listarAtendimentosPendentesRecusar(EmailP,AtPendentes),!;
-    (member("voltar",Palavras)) -> voltarMenuProfissional(EmailP),!;
+    (aceitar(Palavras)) -> listarAtendimentosPendentesAceitar(EmailP,AtPendentes),!;
+    (recusar(Palavras)) -> listarAtendimentosPendentesRecusar(EmailP,AtPendentes),!;
+    (voltar(Palavras)) -> voltarMenuProfissional(EmailP),!;
     writeln("\nNão entendi, poderia repetir?"),
     writeln("Caso queira voltar digite voltar"),
     pausa2,
@@ -596,12 +703,6 @@ listarAtendimentosPendentesAceitarAux(EmailP,AtPendentes,Num):-
                  menuProfissionalAutenticado(EmailP).
 
 
-
-
-
-
-
-
 listarAtendimentosPendentesRecusar(EmailP,AtPendentes):-
     nl,
     writeln("Indique o número do atendimento que deseja recusar"),
@@ -644,4 +745,9 @@ listarAtendimentosPendentesRecusarAux(EmailP,AtPendentes,Num):-
                  exibeBemVindoMenuProfissional,
                  menuProfissionalAutenticado(EmailP).
 
-
+faturamentoServicos(EmailP):-
+    getFaturamentoProfissional(EmailP,Faturamentos),
+    pausa1,
+    write(Faturamentos),
+    pausa1,
+    menuProfissionalAutenticado(EmailP).
