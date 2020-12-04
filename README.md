@@ -12,4 +12,4 @@ Instruções para o código lógico:
 
 2. O código está sem nenhum dado cadastrado, para zerar os dados: Acesse os arquivos atAceitos, AtConcluidos, atPendentes, atRecusados, clientes, profissionais e servicos e apague quaisquer linhas com conteúdo entre parênteses, deixando sempre uma linha em branco no final do documento.
 
-3. Devido a limitações nas formas de comparação oferecidas pela linguagem, ao cadastrar, evite usar letras maiúsculas em qualquer lugar na frase, e evitar números no começo de identificadores, como senha ou email. Por exemplo, a senha "a123" não causará nenhum problema, enquanto a senha "123" irá retornar que o usuário não está cadastrado, pois a senha será diferente do cadastrado.
+3. Ao cadastrar, não use letras maiúsculas em qualquer lugar na frase ou números no começo de identificadores, como senha ou email. Também a ser notado, não utilize espaços para separar palavras, exceto na descrição de um serviço.
